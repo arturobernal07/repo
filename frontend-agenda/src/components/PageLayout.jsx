@@ -1,33 +1,44 @@
-// frontend-agenda/src/components/PageLayout.jsx
-const PageLayout = ({ children }) => {
+function PageLayout({ children, usuario, onLogout }) {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        width: "100vw",
-        padding: "30px 20px",
-        background: "linear-gradient(135deg, #ff9ae1, #7f5dff, #ffd36b)",
-        overflowX: "hidden",
-        boxSizing: "border-box",
-      }}
-    >
-      {/* Contenedor central tipo tarjeta */}
-      <div
+    <div style={{ padding: "20px", color: "white" }}>
+      
+      <header 
         style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          background: "rgba(5, 4, 25, 0.75)",
-          borderRadius: "24px",
-          padding: "24px 28px",
-          boxShadow: "0 18px 40px rgba(0,0,0,0.35)",
-          color: "white",
-          border: "1px solid rgba(255,255,255,0.12)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
         }}
       >
+        <h2>Agenda Inteligente</h2>
+
+        <div>
+          <span style={{ marginRight: "10px" }}>
+            {usuario.nombre} ({usuario.rol})
+          </span>
+
+          <button
+            onClick={onLogout}
+            style={{
+              padding: "6px 14px",
+              borderRadius: "8px",
+              cursor: "pointer",
+              border: "none",
+              background: "linear-gradient(90deg, #ff6bd5, #ffb347)",
+              color: "#1a0935",
+              fontWeight: "bold"
+            }}
+          >
+            Cerrar sesión
+          </button>
+        </div>
+      </header>
+
+      <main style={{ marginTop: "20px" }}>
         {children}
-      </div>
+      </main>
+
     </div>
   );
-};
+}
 
 export default PageLayout;

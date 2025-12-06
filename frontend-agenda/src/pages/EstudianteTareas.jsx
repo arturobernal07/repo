@@ -1,4 +1,5 @@
-import { useState } from "react";
+// src/pages/EstudianteTareas.jsx
+import { useState, useEffect } from "react";
 import PageLayout from "../components/PageLayout";
 import api from "../api/client";
 
@@ -8,6 +9,28 @@ function EstudianteTareas() {
   const [fecha, setFecha] = useState("");
   const [tareas, setTareas] = useState([]);
   const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState("");
+
+  // Cargar tareas de Mongo al entrar a la vista
+  useEffect(() => {
+    const cargarTareas = async () => {
+      try {
+        setCargando(true);
+        setError("");
+        // si tu client tiene baseURL = "https://.../api"
+        // esto llama a https://.../api/tareas
+        const res = await api.get("/tareas");
+        setTareas(res.data);
+      } catch (err) {
+        console.error("Error al obtener tareas", err);
+        setError("No se pudieron cargar las tareas.");
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    cargarTareas();
+  }, []);
 
   const agregarTarea = async (e) => {
     e.preventDefault();
@@ -15,17 +38,23 @@ function EstudianteTareas() {
 
     try {
       setCargando(true);
+      setError("");
+
       const res = await api.post("/tareas", {
         titulo,
         descripcion,
         fecha,
       });
+
+      // Agregar lo que regresa Mongo (ya incluye _id)
       setTareas((prev) => [...prev, res.data]);
+
       setTitulo("");
       setDescripcion("");
       setFecha("");
-    } catch (error) {
-      console.error("Error al agregar tarea", error);
+    } catch (err) {
+      console.error("Error al agregar tarea", err);
+      setError("No se pudo guardar la tarea.");
     } finally {
       setCargando(false);
     }
@@ -47,9 +76,16 @@ function EstudianteTareas() {
       <h2>Tareas del estudiante</h2>
       <p>Ventana para registrar y consultar tareas conectadas a la base de datos.</p>
 
+      {error && <p style={{ color: "#ff8b8b" }}>{error}</p>}
+
       <form
         onSubmit={agregarTarea}
-        style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "12px" }}
+        style={{
+          marginTop: "20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+        }}
       >
         <div>
           <label>Título:</label>
@@ -103,14 +139,22 @@ function EstudianteTareas() {
         </button>
       </form>
 
-      <h3 style={{ marginTop: "24px" }}>Lista de tareas (local)</h3>
-      <ul>
-        {tareas.map((t, i) => (
-          <li key={i}>
-            {t.titulo} – {t.fecha}
-          </li>
-        ))}
-      </ul>
+      <h3 style={{ marginTop: "24px" }}>Lista de tareas (MongoDB)</h3>
+
+      {cargando && tareas.length === 0 && <p>Cargando tareas...</p>}
+
+      {tareas.length === 0 && !cargando ? (
+        <p>No hay tareas registradas aún.</p>
+      ) : (
+        <ul>
+          {tareas.map((t) => (
+            <li key={t._id}>
+              <strong>{t.titulo}</strong> –{" "}
+              {t.fecha ? new Date(t.fecha).toLocaleDateString() : ""}
+            </li>
+          ))}
+        </ul>
+      )}
     </PageLayout>
   );
 }
