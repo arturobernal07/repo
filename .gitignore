@@ -1,0 +1,13 @@
+# Node
+node_modules
+npm-debug.log
+yarn.lock
+
+# Builds
+dist
+build
+
+# Entornos
+.env
+backend-agenda/.env
+frontend-agenda/.env

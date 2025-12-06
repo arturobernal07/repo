@@ -1,0 +1,49 @@
+/* frontend-agenda/src/index.css */
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #ffffff;
+  background-color: #050419;
+  text-rendering: optimizeLegibility;
+}
+
+/* Enlaces */
+a {
+  font-weight: 500;
+  color: #bfa4ff;
+  text-decoration: none;
+}
+a:hover {
+  color: #ffd36b;
+}
+
+/* IMPORTANTE: sin flex raro */
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #050419;
+}
+
+/* Títulos y botones */
+h1,
+h2,
+h3,
+h4 {
+  margin-top: 0;
+}
+
+button {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+button:hover {
+  border-color: #ffd36b;
+}
