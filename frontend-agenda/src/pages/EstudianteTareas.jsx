@@ -1,5 +1,6 @@
 // src/pages/EstudianteTareas.jsx
 import { useEffect, useState } from "react";
+import PageLayout from "../components/PageLayout.jsx";
 import api from "../api/client";
 
 function EstudianteTareas() {
@@ -8,17 +9,24 @@ function EstudianteTareas() {
   const [fecha, setFecha] = useState("");
   const [tareas, setTareas] = useState([]);
   const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState("");
 
-  // Cargar tareas al entrar
+  // Cargar tareas desde el backend al entrar
+  const cargarTareas = async () => {
+    try {
+      setError("");
+      setCargando(true);
+      const res = await api.get("/tareas"); // -> /api/tareas en el backend
+      setTareas(res.data);
+    } catch (err) {
+      console.error("Error al obtener tareas", err);
+      setError("No se pudieron cargar las tareas.");
+    } finally {
+      setCargando(false);
+    }
+  };
+
   useEffect(() => {
-    const cargarTareas = async () => {
-      try {
-        const res = await api.get("/tareas");
-        setTareas(res.data);
-      } catch (error) {
-        console.error("Error al cargar tareas", error);
-      }
-    };
     cargarTareas();
   }, []);
 
@@ -28,17 +36,20 @@ function EstudianteTareas() {
 
     try {
       setCargando(true);
+      setError("");
       const res = await api.post("/tareas", {
         titulo,
         descripcion,
         fecha,
       });
+      // Agregar la nueva tarea a la lista
       setTareas((prev) => [...prev, res.data]);
       setTitulo("");
       setDescripcion("");
       setFecha("");
-    } catch (error) {
-      console.error("Error al agregar tarea", error);
+    } catch (err) {
+      console.error("Error al agregar tarea", err);
+      setError("No se pudo guardar la tarea.");
     } finally {
       setCargando(false);
     }
@@ -58,7 +69,7 @@ function EstudianteTareas() {
   return (
     <div>
       <h2>Tareas del estudiante</h2>
-      <p>Ventana para registrar y consultar tareas conectadas a la base de datos.</p>
+      <p>Registra y consulta tus tareas conectadas a la base de datos.</p>
 
       <form
         onSubmit={agregarTarea}
@@ -116,19 +127,26 @@ function EstudianteTareas() {
             color: "#1a0935",
             fontWeight: "bold",
             cursor: "pointer",
-            alignSelf: "flex-start",
           }}
         >
           {cargando ? "Guardando..." : "Agregar tarea"}
         </button>
       </form>
 
-      <h3 style={{ marginTop: "24px" }}>Lista de tareas</h3>
-      <ul>
+      {error && (
+        <p style={{ color: "#ff8b8b", marginTop: "10px" }}>{error}</p>
+      )}
+
+      <h3 style={{ marginTop: "24px" }}>Tareas guardadas</h3>
+      {cargando && tareas.length === 0 && <p>Cargando tareas...</p>}
+
+      {tareas.length === 0 && !cargando && <p>No hay tareas registradas.</p>}
+
+      <ul style={{ marginTop: "10px", paddingLeft: "18px" }}>
         {tareas.map((t) => (
           <li key={t._id}>
-            <strong>{t.titulo}</strong> –{" "}
-            {t.fecha ? new Date(t.fecha).toLocaleDateString() : ""}
+            <strong>{t.titulo}</strong> —{" "}
+            {t.fecha ? new Date(t.fecha).toLocaleDateString() : "Sin fecha"}
           </li>
         ))}
       </ul>

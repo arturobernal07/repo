@@ -6,22 +6,26 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
-  // Cargar usuario guardado
+  // Cargar sesión guardada al iniciar la app
   useEffect(() => {
-    const saved = localStorage.getItem("agenda-user");
-    if (saved) {
-      setUser(JSON.parse(saved));
+    const guardado = localStorage.getItem("agenda:user");
+    if (guardado) {
+      try {
+        setUser(JSON.parse(guardado));
+      } catch {
+        localStorage.removeItem("agenda:user");
+      }
     }
   }, []);
 
-  const login = (userData) => {
-    setUser(userData);
-    localStorage.setItem("agenda-user", JSON.stringify(userData));
+  const login = (datosUsuario) => {
+    setUser(datosUsuario);
+    localStorage.setItem("agenda:user", JSON.stringify(datosUsuario));
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("agenda-user");
+    localStorage.removeItem("agenda:user");
   };
 
   return (
