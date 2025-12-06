@@ -1,31 +1,36 @@
-import { createContext, useState, useEffect } from 'react';
+// src/context/AuthContext.jsx
+import { createContext, useContext, useEffect, useState } from "react";
 
-export const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [usuario, setUsuario] = useState(null);
+  const [user, setUser] = useState(null);
 
-  // Cargar sesión al iniciar
+  // Cargar usuario guardado
   useEffect(() => {
-    const savedUser = localStorage.getItem("usuario");
-    if (savedUser) {
-      setUsuario(JSON.parse(savedUser));
+    const saved = localStorage.getItem("agenda-user");
+    if (saved) {
+      setUser(JSON.parse(saved));
     }
   }, []);
 
   const login = (userData) => {
-    setUsuario(userData);
-    localStorage.setItem("usuario", JSON.stringify(userData));
+    setUser(userData);
+    localStorage.setItem("agenda-user", JSON.stringify(userData));
   };
 
   const logout = () => {
-    setUsuario(null);
-    localStorage.removeItem("usuario");
+    setUser(null);
+    localStorage.removeItem("agenda-user");
   };
 
   return (
-    <AuthContext.Provider value={{ usuario, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
+}
+
+export function useAuth() {
+  return useContext(AuthContext);
 }

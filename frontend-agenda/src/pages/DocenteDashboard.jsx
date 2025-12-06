@@ -1,16 +1,33 @@
-import PageLayout from "../components/PageLayout";
+// src/pages/DocenteDashboard.jsx
+import { useState } from "react";
+import PageLayout from "../components/PageLayout.jsx";
 
 function DocenteDashboard() {
-  return (
-    <PageLayout>
-      <h2>Dashboard del docente</h2>
-      <p>Resumen general de grupos, actividades próximas y avisos importantes.</p>
+  const [tab, setTab] = useState("salpicadero");
 
-      <ul style={{ marginTop: "10px" }}>
-        <li>Listado rápido de entregas cercanas.</li>
-        <li>Resumen de asistencia reciente.</li>
-        <li>Accesos directos a grupos y reportes.</li>
-      </ul>
+  const tabs = [
+    { id: "salpicadero", label: "Salpicadero" },
+    { id: "actividades", label: "Actividades" },
+    { id: "asistencia", label: "Asistencia" },
+    { id: "grupos", label: "Grupos" },
+    { id: "materiales", label: "Materiales" },
+    { id: "reportes", label: "Reportes" },
+  ];
+
+  return (
+    <PageLayout tabs={tabs} activeTab={tab} onChangeTab={setTab}>
+      {tab === "salpicadero" && (
+        <div>
+          <h2>Salpicadero del docente</h2>
+          <p>Vista general de grupos, actividades y reportes.</p>
+        </div>
+      )}
+
+      {tab === "actividades" && <p>Gestión de actividades.</p>}
+      {tab === "asistencia" && <p>Control de asistencia.</p>}
+      {tab === "grupos" && <p>Administración de grupos.</p>}
+      {tab === "materiales" && <p>Materiales compartidos con alumnos.</p>}
+      {tab === "reportes" && <p>Reportes y estadísticas.</p>}
     </PageLayout>
   );
 }

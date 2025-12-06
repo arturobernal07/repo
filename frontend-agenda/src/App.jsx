@@ -1,37 +1,24 @@
-import { useState, useEffect } from "react";
-import Login from "./pages/Login";
-import PageLayout from "./components/PageLayout";
+// src/App.jsx
+import { useAuth } from "./context/AuthContext.jsx";
+import Login from "./pages/Login.jsx";
+import EstudianteDashboard from "./pages/EstudianteDashboard.jsx";
+import DocenteDashboard from "./pages/DocenteDashboard.jsx";
 
 function App() {
-  const [usuario, setUsuario] = useState(null);
+  const { user, login } = useAuth();
 
-  // Restaurar sesión si existe
-  useEffect(() => {
-    const data = localStorage.getItem("usuarioAgenda");
-    if (data) {
-      setUsuario(JSON.parse(data));
-    }
-  }, []);
-
-  const handleLogin = (user) => {
-    localStorage.setItem("usuarioAgenda", JSON.stringify(user));
-    setUsuario(user);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("usuarioAgenda");
-    setUsuario(null);
-  };
-
-  // Si NO hay usuario → mostrar login
-  if (!usuario) {
-    return <Login onLogin={handleLogin} />;
+  // Si no hay sesión → mostrar login
+  if (!user) {
+    return <Login onLogin={login} />;
   }
 
-  // Si HAY usuario → mostrar dashboard con botón logout
-  return (
-    <PageLayout usuario={usuario} onLogout={handleLogout} />
-  );
+  // Si hay sesión → mostrar interfaz según rol
+  if (user.rol === "docente") {
+    return <DocenteDashboard />;
+  }
+
+  // Por defecto: estudiante
+  return <EstudianteDashboard />;
 }
 
 export default App;

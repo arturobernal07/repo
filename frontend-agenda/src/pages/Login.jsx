@@ -2,43 +2,28 @@
 import { useState } from "react";
 
 function Login({ onLogin }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-
-  // Usuarios de prueba (puedes cambiarlos cuando quieras)
-  const USERS = {
-    "estudiante@demo.com": {
-      nombre: "Estudiante Demo",
-      rol: "estudiante",
-      password: "1234",
-    },
-    "docente@demo.com": {
-      nombre: "Docente Demo",
-      rol: "docente",
-      password: "1234",
-    },
-  };
+  const [correo, setCorreo] = useState("estudiante@demo.com");
+  const [password, setPassword] = useState("1234");
 
   const manejarSubmit = (e) => {
     e.preventDefault();
-    setError("");
 
-    const correo = email.trim().toLowerCase();
-    const usuario = USERS[correo];
+    // Login DEMO: solo 2 usuarios quemados
+    let rol = null;
+    let nombre = "";
 
-    if (!usuario || usuario.password !== password) {
-      setError("Correo o contraseña incorrectos.");
+    if (correo === "estudiante@demo.com" && password === "1234") {
+      rol = "estudiante";
+      nombre = "Estudiante Demo";
+    } else if (correo === "docente@demo.com" && password === "1234") {
+      rol = "docente";
+      nombre = "Docente Demo";
+    } else {
+      alert("Credenciales incorrectas (usa las de demo).");
       return;
     }
 
-    const { password: _omit, ...usuarioSinPassword } = usuario;
-
-    // Notificar al padre (App / Context)
-    onLogin(usuarioSinPassword);
-
-    // Guardar sesión simple en localStorage
-    localStorage.setItem("usuarioAgenda", JSON.stringify(usuarioSinPassword));
+    onLogin({ correo, nombre, rol });
   };
 
   return (
@@ -54,74 +39,67 @@ function Login({ onLogin }) {
     >
       <div
         style={{
-          backgroundColor: "rgba(15, 15, 40, 0.9)",
-          padding: "30px",
-          borderRadius: "20px",
+          backgroundColor: "rgba(15, 15, 40, 0.96)",
+          padding: "32px 36px",
+          borderRadius: "22px",
           color: "white",
-          width: "320px",
-          boxShadow: "0 15px 40px rgba(0,0,0,0.5)",
+          width: "360px",
+          boxShadow: "0 18px 45px rgba(0,0,0,0.55)",
         }}
       >
-        <h2 style={{ marginBottom: "15px", textAlign: "center" }}>
+        <h2 style={{ marginBottom: "12px", textAlign: "center" }}>
           Agenda Inteligente
         </h2>
         <p
           style={{
             fontSize: "0.9rem",
-            marginBottom: "10px",
+            marginBottom: "16px",
             textAlign: "center",
+            opacity: 0.85,
           }}
         >
           Inicia sesión como estudiante o docente.
         </p>
 
         <form onSubmit={manejarSubmit}>
-          <div style={{ marginBottom: "10px" }}>
+          <div style={{ marginBottom: "12px" }}>
             <label>Correo:</label>
             <input
-              type="email"
               style={{
                 width: "100%",
-                padding: "6px",
+                padding: "8px",
                 borderRadius: "8px",
                 border: "none",
                 marginTop: "4px",
               }}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="estudiante@demo.com"
-              required
+              type="email"
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
             />
           </div>
 
-          <div style={{ marginBottom: "10px" }}>
+          <div style={{ marginBottom: "16px" }}>
             <label>Contraseña:</label>
             <input
-              type="password"
               style={{
                 width: "100%",
-                padding: "6px",
+                padding: "8px",
                 borderRadius: "8px",
                 border: "none",
                 marginTop: "4px",
               }}
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="1234"
-              required
             />
           </div>
-
-          {error && (
-            <p style={{ color: "#ff8b8b", fontSize: "0.85rem" }}>{error}</p>
-          )}
 
           <button
             type="submit"
             style={{
               width: "100%",
-              marginTop: "10px",
-              padding: "8px",
+              marginTop: "4px",
+              padding: "10px",
               borderRadius: "999px",
               border: "none",
               background: "linear-gradient(90deg, #ff6bd5, #ffb347)",
@@ -132,15 +110,15 @@ function Login({ onLogin }) {
           >
             Entrar
           </button>
-
-          <div style={{ marginTop: "10px", fontSize: "0.75rem" }}>
-            <strong>Demo:</strong>
-            <br />
-            Estudiante: estudiante@demo.com / 1234
-            <br />
-            Docente: docente@demo.com / 1234
-          </div>
         </form>
+
+        <div style={{ marginTop: "18px", fontSize: "0.8rem" }}>
+          <strong>Demo:</strong>
+          <br />
+          Estudiante: estudiante@demo.com / 1234
+          <br />
+          Docente: docente@demo.com / 1234
+        </div>
       </div>
     </div>
   );
