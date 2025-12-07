@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import PageLayout from "../components/PageLayout";
-import api from "../api/client";
+import { useEffect, useState } from "react";
+import PageLayout from "../components/PageLayout.jsx";
+import api from "../api/client.js";
 
 function EstudianteTareas() {
   const [titulo, setTitulo] = useState("");
@@ -8,19 +8,16 @@ function EstudianteTareas() {
   const [fecha, setFecha] = useState("");
   const [tareas, setTareas] = useState([]);
   const [cargando, setCargando] = useState(false);
-  const [cargandoLista, setCargandoLista] = useState(true);
 
-  // Cargar tareas existentes al abrir la página
+  // Cargar tareas al abrir la pestaña
   useEffect(() => {
     const cargarTareas = async () => {
       try {
         const res = await api.get("/tareas");
-        setTareas(res.data || []);
+        setTareas(res.data);
       } catch (error) {
         console.error("Error al cargar tareas", error);
-        alert("Error al cargar tareas. Revisa el backend o la consola.");
-      } finally {
-        setCargandoLista(false);
+        alert("No se pudieron cargar las tareas. Revisa el backend o la consola.");
       }
     };
 
@@ -39,7 +36,7 @@ function EstudianteTareas() {
         fecha,
       });
 
-      // Agregar la tarea que regresó la API
+      // Agregar la nueva tarea a la lista local
       setTareas((prev) => [...prev, res.data]);
       setTitulo("");
       setDescripcion("");
@@ -68,6 +65,7 @@ function EstudianteTareas() {
       <h2>Tareas del estudiante</h2>
       <p>Ventana para registrar y consultar tareas conectadas a la base de datos.</p>
 
+      {/* Formulario */}
       <form
         onSubmit={agregarTarea}
         style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "12px" }}
@@ -124,22 +122,17 @@ function EstudianteTareas() {
         </button>
       </form>
 
+      {/* Lista de tareas */}
       <h3 style={{ marginTop: "24px" }}>Tareas guardadas</h3>
-
-      {cargandoLista ? (
-        <p>Cargando tareas...</p>
-      ) : tareas.length === 0 ? (
-        <p>No hay tareas registradas.</p>
-      ) : (
-        <ul>
-          {tareas.map((t) => (
-            <li key={t._id || t.id}>
-              <strong>{t.titulo}</strong> —{" "}
-              {t.fecha ? new Date(t.fecha).toLocaleDateString("es-MX") : "Sin fecha"}
-            </li>
-          ))}
-        </ul>
-      )}
+      <ul>
+        {tareas.map((t) => (
+          <li key={t._id}>
+            <strong>{t.titulo}</strong> —{" "}
+            {new Date(t.fecha).toLocaleDateString("es-MX")}
+          </li>
+        ))}
+        {tareas.length === 0 && <p>Aún no hay tareas guardadas.</p>}
+      </ul>
     </PageLayout>
   );
 }
