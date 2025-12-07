@@ -1,9 +1,10 @@
 // frontend-agenda/src/api/client.js
 
-// URL base de tu backend EN PRODUCCIÓN
-// Usamos directamente tu backend de Render.
-const API_BASE =
-  import.meta.env.VITE_API_URL || "https://repo-uywl.onrender.com/api";
+// URL base de tu backend EN PRODUCCIÓN (Render)
+const API_BASE = "https://repo-uywl.onrender.com/api";
+
+// Pequeño log para verificar en consola qué URL se usa
+console.log("Usando backend:", API_BASE);
 
 // Función auxiliar para manejar respuestas HTTP
 async function manejarRespuesta(respuesta) {

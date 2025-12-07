@@ -9,6 +9,7 @@ const iaRoutes = require('./routes/ia');
 
 const app = express();
 
+
 // Middlewares
 app.use(cors());
 app.use(express.json());
