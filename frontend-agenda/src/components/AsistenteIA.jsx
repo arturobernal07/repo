@@ -1,55 +1,75 @@
-// src/components/AsistenteIA.jsx
+// frontend-agenda/src/components/AsistenteIA.jsx
 import { useState } from "react";
-import api from "../api/client";
+import { apiPost } from "../api/client";
 
-function AsistenteIA({ rol = "estudiante" }) {
-  const [mensaje, setMensaje] = useState("");
+const estilosCaja = {
+  maxWidth: "800px",
+  margin: "2rem auto",
+  padding: "1.5rem",
+  borderRadius: "1rem",
+  background:
+    "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
+  boxShadow: "0 10px 35px rgba(0,0,0,0.3)",
+  border: "1px solid rgba(255,255,255,0.15)",
+};
+
+const estilosMensajeIA = {
+  padding: "0.75rem 1rem",
+  marginBottom: "0.5rem",
+  borderRadius: "0.75rem",
+  background: "rgba(93, 63, 211, 0.25)",
+};
+
+const estilosMensajeUser = {
+  padding: "0.75rem 1rem",
+  marginBottom: "0.5rem",
+  borderRadius: "0.75rem",
+  background: "rgba(255, 255, 255, 0.08)",
+  alignSelf: "flex-end",
+};
+
+export default function AsistenteIA({ tipo }) {
   const [mensajes, setMensajes] = useState([
     {
       de: "ia",
       texto:
-        rol === "docente"
-          ? "Hola profe, soy tu asistente de IA. Pídeme ideas de actividades, rúbricas, reportes o mensajes para tus alumnos."
-          : "Hola, soy tu asistente de IA. Pregúntame sobre tus tareas, cómo organizarte o cualquier duda de estudio.",
+        tipo === "docente"
+          ? "Hola profe, soy tu asistente de IA. Pídeme ideas de actividades, rúbricas, informes o mensajes para tus alumnos."
+          : "Hola, soy tu asistente de IA. Pídeme ayuda para entender temas, organizar tareas o estudiar mejor.",
     },
   ]);
+
+  const [texto, setTexto] = useState("");
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
 
   const enviar = async (e) => {
     e.preventDefault();
-    if (!mensaje.trim() || cargando) return;
+    const limpio = texto.trim();
+    if (!limpio || cargando) return;
 
-    const texto = mensaje.trim();
-    setMensaje("");
+    // agrega mensaje del usuario
+    setMensajes((m) => [...m, { de: "tu", texto: limpio }]);
+    setTexto("");
+    setCargando(true);
     setError("");
-    setMensajes((prev) => [...prev, { de: "yo", texto }]);
 
     try {
-      setCargando(true);
-
-      const res = await api.post("/ia", {
-        mensaje: `[ROL: ${rol}] ${texto}`,
+      const data = await apiPost("/api/ia", {
+        mensaje: limpio,
+        tipo,
       });
 
-      const respuestaIA =
-        res.data?.respuesta ||
-        res.data?.message ||
-        "No recibí una respuesta válida del modelo de IA.";
+      const respuesta =
+        data?.respuesta || "No se pudo generar una respuesta útil.";
 
-      setMensajes((prev) => [
-        ...prev,
-        { de: "ia", texto: respuestaIA.toString() },
-      ]);
+      setMensajes((m) => [...m, { de: "ia", texto: respuesta }]);
     } catch (err) {
       console.error(err);
       setError("No se pudo obtener respuesta de la IA.");
-      setMensajes((prev) => [
-        ...prev,
-        {
-          de: "ia",
-          texto: "Ocurrió un error al llamar a la IA. Intenta de nuevo en un momento.",
-        },
+      setMensajes((m) => [
+        ...m,
+        { de: "ia", texto: "Ocurrió un error al llamar a la IA." },
       ]);
     } finally {
       setCargando(false);
@@ -57,56 +77,73 @@ function AsistenteIA({ rol = "estudiante" }) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="bg-slate-950/40 border border-slate-800 rounded-2xl p-4 h-[420px] overflow-y-auto">
-        {mensajes.map((m, index) => (
+    <div style={estilosCaja}>
+      <h2 style={{ marginBottom: "1rem" }}>Asistente IA</h2>
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.25rem",
+          marginBottom: "1rem",
+          maxHeight: "300px",
+          overflowY: "auto",
+        }}
+      >
+        {mensajes.map((m, i) => (
           <div
-            key={index}
-            className={`mb-3 flex ${
-              m.de === "yo" ? "justify-end" : "justify-start"
-            }`}
+            key={i}
+            style={m.de === "ia" ? estilosMensajeIA : estilosMensajeUser}
           >
-            <div
-              className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
-                m.de === "yo"
-                  ? "bg-gradient-to-r from-pink-500 to-orange-400 text-white"
-                  : "bg-slate-900/80 border border-slate-700 text-slate-100"
-              }`}
-            >
-              <p className="text-[11px] opacity-70 mb-0.5">
-                {m.de === "yo" ? "Tú" : "Asistente IA"}
-              </p>
-              <p>{m.texto}</p>
-            </div>
+            <strong>{m.de === "ia" ? "Asistente IA" : "Tú"}</strong>
+            <div>{m.texto}</div>
           </div>
         ))}
       </div>
 
-      <form onSubmit={enviar} className="space-y-2">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            className="flex-1 rounded-full bg-slate-950/60 border border-slate-700 px-4 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-pink-500/60"
-            placeholder={
-              rol === "docente"
-                ? "Pide ideas de actividades, rúbricas, mensajes a padres..."
-                : "Pregunta sobre tus tareas, cómo estudiar, etc."
-            }
-            value={mensaje}
-            onChange={(e) => setMensaje(e.target.value)}
-          />
-          <button
-            type="submit"
-            disabled={cargando}
-            className="px-5 py-2 rounded-full bg-gradient-to-r from-pink-500 to-orange-400 text-sm font-semibold text-white disabled:opacity-60"
-          >
-            {cargando ? "Pensando..." : "Enviar"}
-          </button>
-        </div>
-        {error && <p className="text-xs text-red-400">{error}</p>}
+      <form
+        onSubmit={enviar}
+        style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}
+      >
+        <input
+          type="text"
+          placeholder={
+            tipo === "docente"
+              ? "Pide ideas de actividades, rúbricas, informes..."
+              : "Haz una pregunta o pide ayuda para estudiar..."
+          }
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+          style={{
+            flex: 1,
+            padding: "0.75rem 1rem",
+            borderRadius: "999px",
+            border: "none",
+            outline: "none",
+          }}
+        />
+        <button
+          type="submit"
+          disabled={cargando}
+          style={{
+            padding: "0.75rem 1.5rem",
+            borderRadius: "999px",
+            border: "none",
+            cursor: "pointer",
+            background:
+              "linear-gradient(135deg, #ff7eb3, #ff758c, #ff9770, #ffce6a)",
+            color: "#fff",
+            fontWeight: "600",
+            minWidth: "110px",
+          }}
+        >
+          {cargando ? "Pensando..." : "Enviar"}
+        </button>
       </form>
+
+      {error && (
+        <p style={{ marginTop: "0.75rem", color: "#ff8080" }}>{error}</p>
+      )}
     </div>
   );
 }
-
-export default AsistenteIA;

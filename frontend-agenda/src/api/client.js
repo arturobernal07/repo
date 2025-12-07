@@ -1,49 +1,31 @@
 // frontend-agenda/src/api/client.js
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
+const BASE_URL =
+  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || "http://localhost:4000";
 
-async function request(path, options = {}) {
-  const url = `${API_BASE_URL}${path}`;
-
-  const finalOptions = {
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
-    ...options,
-  };
-
-  const res = await fetch(url, finalOptions);
-
+/**
+ * GET genérico
+ */
+export async function apiGet(path) {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    headers: { "Content-Type": "application/json" },
+  });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(
-      `Error en la petición ${url}: ${res.status} ${res.statusText} - ${text}`
-    );
+    throw new Error(`GET ${path} -> ${res.status}`);
   }
-
   return res.json();
 }
 
-// ==== TAREAS (ESTUDIANTE) ====
-export async function obtenerTareas() {
-  return request("/api/tareas");
-}
-
-export async function crearTarea(data) {
-  return request("/api/tareas", {
+/**
+ * POST genérico
+ */
+export async function apiPost(path, body) {
+  const res = await fetch(`${BASE_URL}${path}`, {
     method: "POST",
-    body: JSON.stringify(data),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
   });
-}
-
-// Puedes tener más helpers para notas, recordatorios, etc.
-// export async function obtenerNotas() { ... }
-
-// ==== IA ====
-export async function consultarIA(mensaje, rol = "estudiante") {
-  return request("/api/ia", {
-    method: "POST",
-    body: JSON.stringify({ mensaje, rol }),
-  });
+  if (!res.ok) {
+    throw new Error(`POST ${path} -> ${res.status}`);
+  }
+  return res.json();
 }

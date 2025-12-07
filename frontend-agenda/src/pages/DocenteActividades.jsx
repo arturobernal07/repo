@@ -1,144 +1,88 @@
 // frontend-agenda/src/pages/DocenteActividades.jsx
-import { useEffect, useState } from "react";
-import client from "../api/client";
-
-const ROL = "docente";
-const EMAIL = "docente@demo.com";
+import { useEffect, useState } from 'react';
+import { crearTarea, obtenerTareas } from '../api/client';
 
 export default function DocenteActividades() {
-  const [titulo, setTitulo] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [fecha, setFecha] = useState("");
-  const [actividades, setActividades] = useState([]);
+  const [titulo, setTitulo] = useState('');
+  const [descripcion, setDescripcion] = useState('');
+  const [fecha, setFecha] = useState('');
+  const [tareas, setTareas] = useState([]);
   const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState('');
 
-  const cargarActividades = async () => {
+  const cargar = async () => {
+    try {
+      setError('');
+      const data = await obtenerTareas();
+      setTareas(data);
+    } catch (err) {
+      console.error('Error al cargar actividades', err);
+      setError('Error al cargar actividades.');
+    }
+  };
+
+  useEffect(() => {
+    cargar();
+  }, []);
+
+  const handleAgregar = async (e) => {
+    e.preventDefault();
+    if (!titulo.trim() || !fecha) return;
+
     try {
       setCargando(true);
-      const { data } = await client.get("/tareas", {
-        params: { rol: ROL, usuario: EMAIL },
-      });
-      setActividades(data);
-    } catch (error) {
-      console.error("Error al cargar actividades:", error);
-      alert("No se pudieron cargar las actividades.");
+      setError('');
+      await crearTarea({ titulo, descripcion, fecha, rol: 'docente' });
+      setTitulo('');
+      setDescripcion('');
+      setFecha('');
+      await cargar();
+      alert('Actividad guardada');
+    } catch (err) {
+      console.error('Error al agregar actividad', err);
+      setError('No se pudo guardar la actividad.');
     } finally {
       setCargando(false);
     }
   };
 
-  useEffect(() => {
-    cargarActividades();
-  }, []);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!titulo.trim() || !fecha) return;
-
-    try {
-      const { data } = await client.post("/tareas", {
-        titulo,
-        descripcion,
-        fecha,
-        rol: ROL,
-        usuario: EMAIL,
-      });
-      setActividades((prev) => [...prev, data]);
-      setTitulo("");
-      setDescripcion("");
-      setFecha("");
-    } catch (error) {
-      console.error("Error al agregar actividad:", error);
-      alert("No se pudo guardar la actividad.");
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("¿Eliminar esta actividad?")) return;
-
-    try {
-      await client.delete(`/tareas/${id}`);
-      setActividades((prev) => prev.filter((a) => a._id !== id));
-    } catch (error) {
-      console.error("Error al eliminar actividad:", error);
-      alert("No se pudo eliminar la actividad.");
-    }
-  };
-
   return (
     <div className="page">
-      <h1 className="page-title">Actividades del docente</h1>
-      <p className="page-subtitle">
-        Planea rápidamente las actividades que mandarás a tus grupos. También
-        aparecerán en tu salpicadero.
-      </p>
+      <h1>Actividades del docente</h1>
+      <p>Planea rápidamente las actividades que mandarás a tus grupos.</p>
 
-      <form onSubmit={handleSubmit} className="card card-form">
-        <div className="form-grid">
-          <div className="form-field">
-            <label>Título de la actividad</label>
-            <input
-              value={titulo}
-              onChange={(e) => setTitulo(e.target.value)}
-              placeholder="Exposición, proyecto, quiz..."
-            />
-          </div>
+      <form onSubmit={handleAgregar} className="tarea-form">
+        <input
+          type="text"
+          placeholder="Título de la actividad"
+          value={titulo}
+          onChange={(e) => setTitulo(e.target.value)}
+        />
+        <textarea
+          placeholder="Descripción breve"
+          value={descripcion}
+          onChange={(e) => setDescripcion(e.target.value)}
+        />
+        <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
 
-          <div className="form-field">
-            <label>Descripción breve</label>
-            <textarea
-              rows={3}
-              value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
-              placeholder="Indicaciones, criterios, rúbrica..."
-            />
-          </div>
-
-          <div className="form-field">
-            <label>Fecha</label>
-            <input
-              type="date"
-              value={fecha}
-              onChange={(e) => setFecha(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <button className="btn-primary">Agregar actividad</button>
+        <button type="submit" disabled={cargando}>
+          {cargando ? 'Guardando...' : 'Agregar actividad'}
+        </button>
       </form>
 
-      <section className="card">
-        <h2 className="section-title">
-          Actividades registradas{" "}
-          {cargando && <span className="tag">Cargando…</span>}
-        </h2>
+      {error && <p className="error">{error}</p>}
 
-        {actividades.length === 0 ? (
-          <p className="empty">Aún no has registrado actividades.</p>
-        ) : (
-          <ul className="items-list">
-            {actividades.map((a) => (
-              <li key={a._id} className="item-row">
-                <div>
-                  <p className="item-title">{a.titulo}</p>
-                  {a.descripcion && (
-                    <p className="item-text">{a.descripcion}</p>
-                  )}
-                </div>
-                <div className="item-meta">
-                  <span className="pill">{a.fecha}</span>
-                  <button
-                    type="button"
-                    className="btn-secondary-sm"
-                    onClick={() => handleDelete(a._id)}
-                  >
-                    Eliminar
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+      <section className="tarea-lista">
+        <h2>Actividades registradas</h2>
+        {tareas.length === 0 && <p>Aún no has registrado actividades.</p>}
+        <ul>
+          {tareas.map((t) => (
+            <li key={t._id}>
+              <strong>{t.titulo}</strong> —{' '}
+              {t.fecha ? new Date(t.fecha).toLocaleDateString() : ''}
+            </li>
+          ))}
+        </ul>
       </section>
     </div>
   );

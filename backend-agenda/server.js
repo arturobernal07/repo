@@ -1,37 +1,39 @@
 // backend-agenda/server.js
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-import mongoose from "mongoose";
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
 
-import tareasRoutes from "./routes/Tareas.js";
-import iaRoutes from "./routes/ia.js";
-
-dotenv.config();
+const tareasRoutes = require('./routes/Tareas');
+const iaRoutes = require('./routes/ia');
 
 const app = express();
-const PORT = process.env.PORT || 4000;
 
 // Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Conexión a Mongo
+// Endpoint de prueba
+app.get('/', (req, res) => {
+  res.json({ ok: true, mensaje: 'Backend de Agenda Inteligente funcionando' });
+});
+
+// Rutas
+app.use('/api/tareas', tareasRoutes);
+app.use('/api/ia', iaRoutes);
+
+// Puerto
+const PORT = process.env.PORT || 4000;
+
+// Conexión a Mongo y arranque del servidor
 mongoose
   .connect(process.env.MONGODB_URI)
-  .then(() => console.log("MongoDB conectado"))
-  .catch((err) => console.error("Error al conectar MongoDB:", err));
-
-// Rutas de la API
-app.use("/api/tareas", tareasRoutes);
-app.use("/api/ia", iaRoutes);
-
-// Ruta simple de prueba
-app.get("/", (req, res) => {
-  res.send("Backend de Agenda Inteligente funcionando");
-});
-
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`Servidor backend corriendo en puerto ${PORT}`);
-});
+  .then(() => {
+    console.log('✅ Conectado a MongoDB');
+    app.listen(PORT, () => {
+      console.log(`🚀 Backend escuchando en el puerto ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('❌ Error al conectar a MongoDB', err);
+  });

@@ -1,4 +1,4 @@
 [build]
-base = "frontend-agenda"
-publish = "dist"
-command = "npm run build"
+  base    = "frontend-agenda"
+  command = "npm run build"
+  publish = "dist"

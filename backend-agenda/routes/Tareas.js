@@ -1,63 +1,37 @@
 // backend-agenda/routes/Tareas.js
-import express from "express";
-import Tarea from "../models/Tarea.js";
-
+const express = require('express');
 const router = express.Router();
+const Tarea = require('../models/Tarea');
 
-// GET /api/tareas?rol=estudiante&usuario=estudiante@demo.com
-router.get("/", async (req, res) => {
+// Obtener todas las tareas
+router.get('/', async (req, res) => {
   try {
-    const { rol, usuario } = req.query;
-
-    const filtro = {};
-    if (rol) filtro.rol = rol;
-    if (usuario) filtro.usuario = usuario;
-
-    const tareas = await Tarea.find(filtro).sort({ fecha: 1 });
+    const tareas = await Tarea.find().sort({ fecha: 1 });
     res.json(tareas);
-  } catch (error) {
-    console.error("Error al obtener tareas:", error);
-    res.status(500).json({ mensaje: "Error al obtener tareas" });
+  } catch (err) {
+    console.error('Error al obtener tareas', err);
+    res.status(500).json({ mensaje: 'Error al obtener tareas' });
   }
 });
 
-// POST /api/tareas
-router.post("/", async (req, res) => {
+// Crear una tarea
+router.post('/', async (req, res) => {
   try {
-    const { titulo, descripcion, fecha, rol, usuario } = req.body;
-
-    if (!titulo || !fecha || !rol || !usuario) {
-      return res
-        .status(400)
-        .json({ mensaje: "Faltan datos obligatorios de la tarea" });
-    }
+    const { titulo, descripcion, fecha, rol } = req.body;
 
     const nuevaTarea = new Tarea({
       titulo,
       descripcion,
       fecha,
-      rol,
-      usuario,
+      rol: rol || 'estudiante'
     });
 
     await nuevaTarea.save();
-
     res.status(201).json(nuevaTarea);
-  } catch (error) {
-    console.error("Error al crear tarea:", error);
-    res.status(500).json({ mensaje: "Error al crear tarea" });
+  } catch (err) {
+    console.error('Error al crear tarea', err);
+    res.status(500).json({ mensaje: 'Error al crear tarea' });
   }
 });
 
-// DELETE /api/tareas/:id
-router.delete("/:id", async (req, res) => {
-  try {
-    await Tarea.findByIdAndDelete(req.params.id);
-    res.json({ mensaje: "Tarea eliminada" });
-  } catch (error) {
-    console.error("Error al eliminar tarea:", error);
-    res.status(500).json({ mensaje: "Error al eliminar tarea" });
-  }
-});
-
-export default router;
+module.exports = router;

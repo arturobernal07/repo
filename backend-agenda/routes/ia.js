@@ -3,51 +3,46 @@ const express = require("express");
 const router = express.Router();
 const Groq = require("groq-sdk");
 
-const apiKey = process.env.GROQ_API_KEY;
+require("dotenv").config();
 
-if (!apiKey) {
-  console.error("❌ Falta la variable de entorno GROQ_API_KEY");
-}
-
-const groq = new Groq({ apiKey });
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
 
 // POST /api/ia
 router.post("/", async (req, res) => {
+  const { mensaje, tipo } = req.body; // tipo puede ser 'docente' o 'estudiante'
+
+  if (!mensaje) {
+    return res.status(400).json({ error: "Falta el mensaje." });
+  }
+
+  const rolUsuario =
+    tipo === "docente"
+      ? "Eres un asistente para un profesor. Da ideas de actividades, rúbricas, informes, etc. Responde en español."
+      : "Eres un asistente para un estudiante. Explica en sencillo, da tips de estudio y organiza tareas. Responde en español.";
+
   try {
-    const { mensaje, rol } = req.body || {};
-
-    if (!mensaje) {
-      return res
-        .status(400)
-        .json({ error: "El campo 'mensaje' es obligatorio." });
-    }
-
-    // Pequeño prompt según rol
-    const systemContent =
-      rol === "docente"
-        ? "Eres un asistente para docentes de universidad. Da ideas de actividades, rúbricas e informes breves."
-        : "Eres un asistente para estudiantes de universidad. Explica las cosas sencillo y con ejemplos cortos.";
-
     const completion = await groq.chat.completions.create({
       model: "llama3-8b-8192",
       messages: [
-        { role: "system", content: systemContent },
+        { role: "system", content: rolUsuario },
         { role: "user", content: mensaje },
       ],
+      max_tokens: 400,
       temperature: 0.7,
-      max_tokens: 600,
     });
 
-    const textoIA =
+    const texto =
       completion.choices?.[0]?.message?.content?.trim() ||
-      "No pude generar una respuesta en este momento.";
+      "No pude generar una respuesta.";
 
-    res.json({ respuesta: textoIA });
-  } catch (error) {
-    console.error("Error en /api/ia:", error);
-    res
+    return res.json({ respuesta: texto });
+  } catch (err) {
+    console.error("Error en /api/ia:", err);
+    return res
       .status(500)
-      .json({ error: "Error al obtener respuesta de la IA en el servidor." });
+      .json({ error: "Error al obtener respuesta de la IA" });
   }
 });
 
