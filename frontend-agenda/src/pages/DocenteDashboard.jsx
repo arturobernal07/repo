@@ -1,4 +1,3 @@
-// frontend-agenda/src/pages/DocenteDashboard.jsx
 import { useEffect, useState } from 'react';
 import { obtenerTareas } from '../api/client';
 
@@ -6,32 +5,32 @@ export default function DocenteDashboard() {
   const [tareas, setTareas] = useState([]);
   const [error, setError] = useState('');
 
+  const cargar = async () => {
+    try {
+      setError('');
+      const data = await obtenerTareas({ rol: 'docente' });
+      setTareas(data || []);
+    } catch (err) {
+      console.error('Error docente:', err);
+      setError('Error al cargar tareas.');
+    }
+  };
+
   useEffect(() => {
-    (async () => {
-      try {
-        const data = await obtenerTareas();
-        setTareas(data);
-      } catch (err) {
-        console.error('Error al cargar actividades para el salpicadero', err);
-        setError('Error al cargar actividades.');
-      }
-    })();
+    cargar();
   }, []);
 
   return (
     <div className="page">
-      <h1>Salpicadero del docente</h1>
-      <p>Resumen general de grupos, actividades y reportes.</p>
+      <h1>Panel del Docente</h1>
+      <p>Resumen de tareas creadas por el docente.</p>
 
       {error && <p className="error">{error}</p>}
-
-      {tareas.length === 0 && !error && <p>No hay actividades registradas.</p>}
 
       <ul>
         {tareas.map((t) => (
           <li key={t._id}>
-            <strong>{t.titulo}</strong> —{' '}
-            {t.fecha ? new Date(t.fecha).toLocaleDateString() : ''}
+            <strong>{t.titulo}</strong> — {new Date(t.fecha).toLocaleDateString()}
           </li>
         ))}
       </ul>
