@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+// src/pages/EstudianteTareas.jsx
+import { useState, useEffect } from "react";
 import PageLayout from "../components/PageLayout.jsx";
 import api from "../api/client.js";
 
@@ -9,21 +10,25 @@ function EstudianteTareas() {
   const [tareas, setTareas] = useState([]);
   const [cargando, setCargando] = useState(false);
 
-  // Cargar tareas al abrir la pestaña
+  // 1. Cargar tareas al entrar a la pantalla
   useEffect(() => {
     const cargarTareas = async () => {
       try {
+        setCargando(true);
         const res = await api.get("/tareas");
         setTareas(res.data);
       } catch (error) {
         console.error("Error al cargar tareas", error);
-        alert("No se pudieron cargar las tareas. Revisa el backend o la consola.");
+        alert("No se pudieron cargar las tareas. Revisa la consola.");
+      } finally {
+        setCargando(false);
       }
     };
 
     cargarTareas();
   }, []);
 
+  // 2. Agregar tarea nueva
   const agregarTarea = async (e) => {
     e.preventDefault();
     if (!titulo || !descripcion || !fecha) return;
@@ -36,8 +41,10 @@ function EstudianteTareas() {
         fecha,
       });
 
-      // Agregar la nueva tarea a la lista local
+      // Agregamos la tarea nueva a la lista
       setTareas((prev) => [...prev, res.data]);
+
+      // Limpiar formulario
       setTitulo("");
       setDescripcion("");
       setFecha("");
@@ -65,10 +72,14 @@ function EstudianteTareas() {
       <h2>Tareas del estudiante</h2>
       <p>Ventana para registrar y consultar tareas conectadas a la base de datos.</p>
 
-      {/* Formulario */}
       <form
         onSubmit={agregarTarea}
-        style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "12px" }}
+        style={{
+          marginTop: "20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+        }}
       >
         <div>
           <label>Título:</label>
@@ -122,8 +133,8 @@ function EstudianteTareas() {
         </button>
       </form>
 
-      {/* Lista de tareas */}
       <h3 style={{ marginTop: "24px" }}>Tareas guardadas</h3>
+      {tareas.length === 0 && <p>No hay tareas todavía.</p>}
       <ul>
         {tareas.map((t) => (
           <li key={t._id}>
@@ -131,7 +142,6 @@ function EstudianteTareas() {
             {new Date(t.fecha).toLocaleDateString("es-MX")}
           </li>
         ))}
-        {tareas.length === 0 && <p>Aún no hay tareas guardadas.</p>}
       </ul>
     </PageLayout>
   );
