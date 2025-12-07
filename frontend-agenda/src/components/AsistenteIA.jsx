@@ -1,14 +1,13 @@
 // frontend-agenda/src/components/AsistenteIA.jsx
 import { useState } from "react";
-import { apiPost } from "../api/client";
+import { preguntarIA } from "../api/client";
 
 const estilosCaja = {
   maxWidth: "800px",
   margin: "2rem auto",
   padding: "1.5rem",
   borderRadius: "1rem",
-  background:
-    "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
+  background: "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
   boxShadow: "0 10px 35px rgba(0,0,0,0.3)",
   border: "1px solid rgba(255,255,255,0.15)",
 };
@@ -55,14 +54,9 @@ export default function AsistenteIA({ tipo }) {
     setError("");
 
     try {
-      const data = await apiPost("/api/ia", {
-        mensaje: limpio,
-        tipo,
-      });
-
+      const data = await preguntarIA({ mensaje: limpio, tipo });
       const respuesta =
         data?.respuesta || "No se pudo generar una respuesta útil.";
-
       setMensajes((m) => [...m, { de: "ia", texto: respuesta }]);
     } catch (err) {
       console.error(err);
@@ -78,18 +72,9 @@ export default function AsistenteIA({ tipo }) {
 
   return (
     <div style={estilosCaja}>
-      <h2 style={{ marginBottom: "1rem" }}>Asistente IA</h2>
+      <h2>Asistente IA</h2>
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.25rem",
-          marginBottom: "1rem",
-          maxHeight: "300px",
-          overflowY: "auto",
-        }}
-      >
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1rem" }}>
         {mensajes.map((m, i) => (
           <div
             key={i}
@@ -107,11 +92,7 @@ export default function AsistenteIA({ tipo }) {
       >
         <input
           type="text"
-          placeholder={
-            tipo === "docente"
-              ? "Pide ideas de actividades, rúbricas, informes..."
-              : "Haz una pregunta o pide ayuda para estudiar..."
-          }
+          placeholder="Escribe tu pregunta..."
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
           style={{
@@ -126,15 +107,10 @@ export default function AsistenteIA({ tipo }) {
           type="submit"
           disabled={cargando}
           style={{
-            padding: "0.75rem 1.5rem",
+            padding: "0.75rem 1.25rem",
             borderRadius: "999px",
             border: "none",
             cursor: "pointer",
-            background:
-              "linear-gradient(135deg, #ff7eb3, #ff758c, #ff9770, #ffce6a)",
-            color: "#fff",
-            fontWeight: "600",
-            minWidth: "110px",
           }}
         >
           {cargando ? "Pensando..." : "Enviar"}
@@ -142,7 +118,7 @@ export default function AsistenteIA({ tipo }) {
       </form>
 
       {error && (
-        <p style={{ marginTop: "0.75rem", color: "#ff8080" }}>{error}</p>
+        <p style={{ marginTop: "0.75rem", color: "#ffb3b3" }}>{error}</p>
       )}
     </div>
   );

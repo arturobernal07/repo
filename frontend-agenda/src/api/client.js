@@ -1,17 +1,18 @@
 // frontend-agenda/src/api/client.js
 
-// URL base de tu backend.
-// En producción tomará VITE_API_URL (Netlify), en local usa localhost:4000.
+// URL base de tu backend EN PRODUCCIÓN
+// Usamos directamente tu backend de Render.
 const API_BASE =
-  import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+  import.meta.env.VITE_API_URL || "https://repo-uywl.onrender.com/api";
 
 // Función auxiliar para manejar respuestas HTTP
 async function manejarRespuesta(respuesta) {
   if (!respuesta.ok) {
-    const texto = await respuesta.text().catch(() => '');
+    const texto = await respuesta.text().catch(() => "");
     throw new Error(`Error HTTP ${respuesta.status}: ${texto}`);
   }
-  // Si no hay cuerpo JSON simplemente regresamos vacío
+
+  // Si no hay cuerpo JSON, simplemente regresamos vacío
   try {
     return await respuesta.json();
   } catch {
@@ -27,13 +28,15 @@ export async function obtenerTareas(params = {}) {
   const url = new URL(`${API_BASE}/tareas`);
 
   Object.entries(params).forEach(([clave, valor]) => {
-    if (valor !== undefined && valor !== null && valor !== '') {
+    if (valor !== undefined && valor !== null && valor !== "") {
       url.searchParams.set(clave, valor);
     }
   });
 
   const res = await fetch(url.toString(), {
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
 
   return manejarRespuesta(res);
@@ -45,8 +48,10 @@ export async function obtenerTareas(params = {}) {
  */
 export async function crearTarea(tarea) {
   const res = await fetch(`${API_BASE}/tareas`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(tarea),
   });
 
@@ -55,13 +60,15 @@ export async function crearTarea(tarea) {
 
 /**
  * Actualizar una tarea existente
- * @param {string} id  id de la tarea (MongoDB)
+ * @param {string} id id de la tarea (MongoDB)
  * @param {Object} cambios campos a actualizar
  */
 export async function actualizarTarea(id, cambios) {
   const res = await fetch(`${API_BASE}/tareas/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(cambios),
   });
 
@@ -74,7 +81,7 @@ export async function actualizarTarea(id, cambios) {
  */
 export async function eliminarTarea(id) {
   const res = await fetch(`${API_BASE}/tareas/${id}`, {
-    method: 'DELETE',
+    method: "DELETE",
   });
 
   return manejarRespuesta(res);
@@ -82,12 +89,14 @@ export async function eliminarTarea(id) {
 
 /**
  * Consultar a la IA
- * @param {Object} datos { mensaje, rol }
+ * @param {Object} datos { mensaje, tipo }
  */
 export async function preguntarIA(datos) {
   const res = await fetch(`${API_BASE}/ia`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(datos),
   });
 
