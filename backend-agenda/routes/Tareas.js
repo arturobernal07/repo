@@ -1,7 +1,7 @@
 // backend-agenda/routes/Tareas.js
 const express = require("express");
 const router = express.Router();
-const Tarea = require("../models/Tarea"); // <-- importa el modelo
+const Tarea = require('../models/Tarea');
 
 // GET /api/tareas  -> listar todas
 router.get("/", async (req, res) => {
