@@ -1,28 +1,18 @@
 // backend-agenda/models/Tarea.js
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const TareaSchema = new mongoose.Schema({
-  titulo: {
+  titulo: String,
+  descripcion: String,
+  fecha: Date,
+  estatus: { type: String, default: 'pendiente' },
+
+  // NUEVO: para separar tareas de estudiante y docente
+  rol: {
     type: String,
-    required: true,
-    trim: true,
-  },
-  descripcion: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  fecha: {
-    type: Date,
-    required: true,
-  },
-  estatus: {
-    type: String,
-    default: "pendiente",
+    enum: ['estudiante', 'docente'],
+    default: 'estudiante',
   },
 });
 
-// ESTE es el modelo. Lo exportamos directo.
-const Tarea = mongoose.model("Tarea", TareaSchema);
-
-module.exports = Tarea;
+module.exports = mongoose.model('Tarea', TareaSchema);
