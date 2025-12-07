@@ -2,11 +2,27 @@
 const mongoose = require("mongoose");
 
 const TareaSchema = new mongoose.Schema({
-  titulo: { type: String, required: true },
-  descripcion: { type: String, required: true },
-  fecha: { type: Date, required: true },
-  estatus: { type: String, default: "pendiente" },
+  titulo: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  descripcion: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  fecha: {
+    type: Date,
+    required: true,
+  },
+  estatus: {
+    type: String,
+    default: "pendiente",
+  },
 });
 
-// 👉 Exportamos DIRECTO el modelo (no con exports.Tarea ni nada raro)
-module.exports = mongoose.model("Tarea", TareaSchema);
+// ESTE es el modelo. Lo exportamos directo.
+const Tarea = mongoose.model("Tarea", TareaSchema);
+
+module.exports = Tarea;

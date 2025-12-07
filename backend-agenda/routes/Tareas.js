@@ -1,9 +1,10 @@
 // backend-agenda/routes/Tareas.js
 const express = require("express");
 const router = express.Router();
-
-// ⚠️ IMPORTANTE: ruta correcta al modelo
 const Tarea = require("../models/Tarea");
+
+// DEBUG opcional: para ver qué se está importando en Render
+console.log("Modelo Tarea en rutas:", typeof Tarea, Tarea && Tarea.modelName);
 
 // Obtener todas las tareas
 router.get("/", async (req, res) => {
@@ -19,9 +20,9 @@ router.get("/", async (req, res) => {
 // Crear una nueva tarea
 router.post("/", async (req, res) => {
   try {
-    const tarea = new Tarea(req.body);
-    await tarea.save();
-    res.status(201).json(tarea);
+    const nuevaTarea = new Tarea(req.body);
+    await nuevaTarea.save();
+    res.status(201).json(nuevaTarea);
   } catch (error) {
     console.error("Error al crear tarea:", error);
     res.status(500).json({ mensaje: "Error al crear tarea" });
@@ -31,10 +32,12 @@ router.post("/", async (req, res) => {
 // Actualizar una tarea
 router.put("/:id", async (req, res) => {
   try {
-    const tarea = await Tarea.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    res.json(tarea);
+    const tareaActualizada = await Tarea.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    res.json(tareaActualizada);
   } catch (error) {
     console.error("Error al actualizar tarea:", error);
     res.status(500).json({ mensaje: "Error al actualizar tarea" });
