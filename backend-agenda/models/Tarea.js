@@ -8,8 +8,5 @@ const TareaSchema = new mongoose.Schema({
   estatus: { type: String, default: "pendiente" },
 });
 
-// ESTE es el modelo
-const Tarea = mongoose.model("Tarea", TareaSchema);
-
-// Y esto es lo que se exporta
-module.exports = Tarea;
+// 👉 Exportamos DIRECTO el modelo (no con exports.Tarea ni nada raro)
+module.exports = mongoose.model("Tarea", TareaSchema);
