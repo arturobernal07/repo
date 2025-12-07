@@ -1,25 +1,23 @@
-// src/App.jsx
-import "./App.css";
-import { useAuth } from "./context/AuthContext.jsx";
-
+// frontend-agenda/src/App.jsx
+import { useAuth } from "./context/AuthContext";
 import Login from "./pages/Login.jsx";
-import EstudianteDashboard from "./pages/EstudianteDashboard.jsx";
 import DocenteDashboard from "./pages/DocenteDashboard.jsx";
+import EstudianteDashboard from "./pages/EstudianteDashboard.jsx";
 
 function App() {
   const { user, login } = useAuth();
 
-  // 1) Si no hay sesión → mostrar login
+  // 1️⃣ Si NO hay usuario → mostrar login
   if (!user) {
     return <Login onLogin={login} />;
   }
 
-  // 2) Si hay sesión y el rol es docente → interfaz docente
+  // 2️⃣ Si hay usuario docente → dashboard docente
   if (user.rol === "docente") {
     return <DocenteDashboard />;
   }
 
-  // 3) Cualquier otro rol (estudiante por ahora) → interfaz estudiante
+  // 3️⃣ En cualquier otro caso → dashboard estudiante
   return <EstudianteDashboard />;
 }
 

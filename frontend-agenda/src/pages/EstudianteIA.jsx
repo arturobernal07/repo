@@ -1,98 +1,74 @@
 // frontend-agenda/src/pages/EstudianteIA.jsx
 import { useState } from "react";
-import client from "../api/client";
+import { consultarIA } from "../api/client";
 
 export default function EstudianteIA() {
   const [mensaje, setMensaje] = useState("");
-  const [conversacion, setConversacion] = useState([]);
-  const [cargando, setCargando] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [historial, setHistorial] = useState([
+    {
+      autor: "IA",
+      texto:
+        "Hola, soy tu asistente. Pregúntame dudas de tareas, conceptos o pídele que te proponga un plan de estudio.",
+    },
+  ]);
 
-  const enviar = async () => {
+  const handleEnviar = async (e) => {
+    e.preventDefault();
+    if (!mensaje.trim() || loading) return;
+
     const texto = mensaje.trim();
-    if (!texto) return;
-
-    setConversacion((prev) => [
-      ...prev,
-      { autor: "Tú", texto },
-    ]);
     setMensaje("");
 
+    setHistorial((h) => [...h, { autor: "Tú", texto }]);
+    setLoading(true);
+
     try {
-      setCargando(true);
-      const { data } = await client.post("/ia", { mensaje: texto });
-      setConversacion((prev) => [
-        ...prev,
-        { autor: "Asistente IA", texto: data.respuesta || "Sin respuesta." },
+      const data = await consultarIA(texto, "estudiante");
+      setHistorial((h) => [
+        ...h,
+        { autor: "IA", texto: data.respuesta || "No recibí respuesta." },
       ]);
-    } catch (error) {
-      console.error("Error con la IA:", error);
-      setConversacion((prev) => [
-        ...prev,
+    } catch (err) {
+      console.error(err);
+      setHistorial((h) => [
+        ...h,
         {
-          autor: "Asistente IA",
+          autor: "IA",
           texto:
             "Ocurrió un error al llamar a la IA. Intenta de nuevo en un momento.",
         },
       ]);
     } finally {
-      setCargando(false);
-    }
-  };
-
-  const handleKey = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      enviar();
+      setLoading(false);
     }
   };
 
   return (
-    <div className="page">
-      <h1 className="page-title">Asistente IA del estudiante</h1>
-      <p className="page-subtitle">
-        Pídele ideas de tareas, recordatorios o formas de organizar tu estudio.
-      </p>
+    <div className="ia-container">
+      <h2>Asistente IA del estudiante</h2>
 
-      <section className="card">
-        <div className="ia-chat">
-          {conversacion.map((m, idx) => (
-            <div
-              key={idx}
-              className={`ia-message ${
-                m.autor === "Tú" ? "ia-user" : "ia-bot"
-              }`}
-            >
-              <strong>{m.autor}</strong>
-              <p>{m.texto}</p>
-            </div>
-          ))}
+      <div className="ia-chat">
+        {historial.map((m, i) => (
+          <div key={i} className={`ia-msg ia-msg-${m.autor === "Tú" ? "user" : "ia"}`}>
+            <strong>{m.autor}: </strong>
+            <span>{m.texto}</span>
+          </div>
+        ))}
+        {loading && <p className="ia-typing">La IA está pensando...</p>}
+      </div>
 
-          {conversacion.length === 0 && (
-            <p className="empty">
-              Escríbeme algo como:{" "}
-              <em>"Dame tips para estudiar para el examen de matemáticas"</em>.
-            </p>
-          )}
-        </div>
-
-        <div className="ia-input">
-          <textarea
-            rows={2}
-            value={mensaje}
-            onChange={(e) => setMensaje(e.target.value)}
-            onKeyDown={handleKey}
-            placeholder="Pide ideas de tareas, técnicas de estudio, etc."
-          />
-          <button
-            className="btn-primary"
-            type="button"
-            onClick={enviar}
-            disabled={cargando}
-          >
-            {cargando ? "Enviando..." : "Enviar"}
-          </button>
-        </div>
-      </section>
+      <form className="ia-form" onSubmit={handleEnviar}>
+        <input
+          type="text"
+          placeholder="Escribe tu duda o pide un resumen..."
+          value={mensaje}
+          onChange={(e) => setMensaje(e.target.value)}
+        />
+        <button type="submit" disabled={loading}>
+          {loading ? "Enviando..." : "Enviar"}
+        </button>
+      </form>
     </div>
   );
 }

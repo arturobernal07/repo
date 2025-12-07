@@ -1,68 +1,54 @@
 // backend-agenda/routes/ia.js
-import express from "express";
-import Groq from "groq-sdk";
-
+const express = require("express");
 const router = express.Router();
+const Groq = require("groq-sdk");
 
-let groqClient = null;
-if (process.env.GROQ_API_KEY) {
-  groqClient = new Groq({ apiKey: process.env.GROQ_API_KEY });
-} else {
-  console.warn(
-    "⚠️ No se encontró GROQ_API_KEY. La IA usará una respuesta simple de fallback."
-  );
+const apiKey = process.env.GROQ_API_KEY;
+
+if (!apiKey) {
+  console.error("❌ Falta la variable de entorno GROQ_API_KEY");
 }
 
+const groq = new Groq({ apiKey });
+
 // POST /api/ia
-// body: { mensaje: "texto del usuario" }
 router.post("/", async (req, res) => {
-  const { mensaje } = req.body;
-
-  if (!mensaje) {
-    return res
-      .status(400)
-      .json({ mensaje: "Falta el campo 'mensaje' en el body." });
-  }
-
-  // Si no hay clave de Groq, respondemos con un texto sencillo para no romper nada
-  if (!groqClient) {
-    const respuesta =
-      "Soy un asistente básico. A partir de lo que escribiste puedo sugerir:\n\n" +
-      `1. Define claramente el objetivo de la actividad: ${mensaje}\n` +
-      "2. Divide la actividad en 3 pasos.\n" +
-      "3. Cierra con una reflexión o mini rúbrica de 3 niveles (Excelente, Satisfactorio, En proceso).";
-    return res.json({ respuesta });
-  }
-
   try {
-    const completion = await groqClient.chat.completions.create({
+    const { mensaje, rol } = req.body || {};
+
+    if (!mensaje) {
+      return res
+        .status(400)
+        .json({ error: "El campo 'mensaje' es obligatorio." });
+    }
+
+    // Pequeño prompt según rol
+    const systemContent =
+      rol === "docente"
+        ? "Eres un asistente para docentes de universidad. Da ideas de actividades, rúbricas e informes breves."
+        : "Eres un asistente para estudiantes de universidad. Explica las cosas sencillo y con ejemplos cortos.";
+
+    const completion = await groq.chat.completions.create({
       model: "llama3-8b-8192",
       messages: [
-        {
-          role: "system",
-          content:
-            "Eres un asistente de agenda escolar. Das ideas breves, claras y en español para actividades, tareas, recordatorios o informes para estudiantes y docentes.",
-        },
-        {
-          role: "user",
-          content: mensaje,
-        },
+        { role: "system", content: systemContent },
+        { role: "user", content: mensaje },
       ],
       temperature: 0.7,
-      max_tokens: 512,
+      max_tokens: 600,
     });
 
-    const respuesta =
-      completion.choices?.[0]?.message?.content ||
+    const textoIA =
+      completion.choices?.[0]?.message?.content?.trim() ||
       "No pude generar una respuesta en este momento.";
 
-    res.json({ respuesta });
+    res.json({ respuesta: textoIA });
   } catch (error) {
-    console.error("Error al llamar a la IA:", error);
+    console.error("Error en /api/ia:", error);
     res
       .status(500)
-      .json({ mensaje: "Error al obtener respuesta de la IA en el servidor." });
+      .json({ error: "Error al obtener respuesta de la IA en el servidor." });
   }
 });
 
-export default router;
+module.exports = router;

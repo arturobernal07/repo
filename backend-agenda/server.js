@@ -1,57 +1,37 @@
 // backend-agenda/server.js
 import express from "express";
 import cors from "cors";
-import mongoose from "mongoose";
 import dotenv from "dotenv";
+import mongoose from "mongoose";
 
-import tareasRouter from "./routes/Tareas.js";
-import iaRouter from "./routes/ia.js";
+import tareasRoutes from "./routes/Tareas.js";
+import iaRoutes from "./routes/ia.js";
 
 dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 4000;
 
-// Ajusta aquí tus orígenes (Netlify + localhost)
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "https://appconia.netlify.app",
-];
-
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(null, true); // si quieres, aquí puedes bloquear orígenes raros
-    },
-  })
-);
-
+// Middlewares
+app.use(cors());
 app.use(express.json());
 
-const mongoUri = process.env.MONGODB_URI;
-if (!mongoUri) {
-  console.error("❌ Falta la variable MONGODB_URI en el backend");
-}
-
+// Conexión a Mongo
 mongoose
-  .connect(mongoUri)
-  .then(() => console.log("✅ Conectado a MongoDB"))
-  .catch((err) => {
-    console.error("❌ Error al conectar con MongoDB", err);
-  });
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log("MongoDB conectado"))
+  .catch((err) => console.error("Error al conectar MongoDB:", err));
 
+// Rutas de la API
+app.use("/api/tareas", tareasRoutes);
+app.use("/api/ia", iaRoutes);
+
+// Ruta simple de prueba
 app.get("/", (req, res) => {
-  res.send("API Agenda Inteligente funcionando");
+  res.send("Backend de Agenda Inteligente funcionando");
 });
 
-// Rutas
-app.use("/api/tareas", tareasRouter);
-app.use("/api/ia", iaRouter);
-
-const PORT = process.env.PORT || 4000;
+// Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`🚀 Backend escuchando en el puerto ${PORT}`);
+  console.log(`Servidor backend corriendo en puerto ${PORT}`);
 });
