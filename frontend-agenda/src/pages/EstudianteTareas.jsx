@@ -1,150 +1,144 @@
-// src/pages/EstudianteTareas.jsx
-import { useState, useEffect } from "react";
-import PageLayout from "../components/PageLayout.jsx";
-import api from "../api/client.js";
+// frontend-agenda/src/pages/EstudianteTareas.jsx
+import { useEffect, useState } from "react";
+import client from "../api/client";
 
-function EstudianteTareas() {
+const ROL = "estudiante";
+const EMAIL = "estudiante@demo.com";
+
+export default function EstudianteTareas() {
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [fecha, setFecha] = useState("");
   const [tareas, setTareas] = useState([]);
   const [cargando, setCargando] = useState(false);
 
-  // 1. Cargar tareas al entrar a la pantalla
-  useEffect(() => {
-    const cargarTareas = async () => {
-      try {
-        setCargando(true);
-        const res = await api.get("/tareas");
-        setTareas(res.data);
-      } catch (error) {
-        console.error("Error al cargar tareas", error);
-        alert("No se pudieron cargar las tareas. Revisa la consola.");
-      } finally {
-        setCargando(false);
-      }
-    };
-
-    cargarTareas();
-  }, []);
-
-  // 2. Agregar tarea nueva
-  const agregarTarea = async (e) => {
-    e.preventDefault();
-    if (!titulo || !descripcion || !fecha) return;
-
+  const cargarTareas = async () => {
     try {
       setCargando(true);
-      const res = await api.post("/tareas", {
-        titulo,
-        descripcion,
-        fecha,
+      const { data } = await client.get("/tareas", {
+        params: { rol: ROL, usuario: EMAIL },
       });
-
-      // Agregamos la tarea nueva a la lista
-      setTareas((prev) => [...prev, res.data]);
-
-      // Limpiar formulario
-      setTitulo("");
-      setDescripcion("");
-      setFecha("");
+      setTareas(data);
     } catch (error) {
-      console.error("Error al agregar tarea", error);
-      alert("No se pudo guardar la tarea. Revisa el backend o la consola.");
+      console.error("Error al cargar tareas:", error);
+      alert("No se pudieron cargar las tareas. Revisa la consola.");
     } finally {
       setCargando(false);
     }
   };
 
-  const campoEstilo = {
-    width: "100%",
-    maxWidth: "600px",
-    padding: "8px 10px",
-    borderRadius: "10px",
-    border: "1px solid rgba(255,255,255,0.25)",
-    background: "rgba(255,255,255,0.06)",
-    color: "white",
-    outline: "none",
+  useEffect(() => {
+    cargarTareas();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!titulo.trim() || !fecha) return;
+
+    try {
+      const { data } = await client.post("/tareas", {
+        titulo,
+        descripcion,
+        fecha,
+        rol: ROL,
+        usuario: EMAIL,
+      });
+      setTareas((prev) => [...prev, data]);
+      setTitulo("");
+      setDescripcion("");
+      setFecha("");
+    } catch (error) {
+      console.error("Error al agregar tarea:", error);
+      alert("No se pudo guardar la tarea. Revisa el backend o la consola.");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("¿Seguro que quieres eliminar esta tarea?")) return;
+
+    try {
+      await client.delete(`/tareas/${id}`);
+      setTareas((prev) => prev.filter((t) => t._id !== id));
+    } catch (error) {
+      console.error("Error al eliminar tarea:", error);
+      alert("No se pudo eliminar la tarea.");
+    }
   };
 
   return (
-    <PageLayout>
-      <h2>Tareas del estudiante</h2>
-      <p>Ventana para registrar y consultar tareas conectadas a la base de datos.</p>
+    <div className="page">
+      <h1 className="page-title">Tareas del estudiante</h1>
+      <p className="page-subtitle">
+        Registra tus tareas y se reflejarán también en tu salpicadero.
+      </p>
 
-      <form
-        onSubmit={agregarTarea}
-        style={{
-          marginTop: "20px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "12px",
-        }}
-      >
-        <div>
-          <label>Título:</label>
-          <br />
-          <input
-            style={campoEstilo}
-            value={titulo}
-            onChange={(e) => setTitulo(e.target.value)}
-            required
-          />
+      <form onSubmit={handleSubmit} className="card card-form">
+        <div className="form-grid">
+          <div className="form-field">
+            <label>Título</label>
+            <input
+              value={titulo}
+              onChange={(e) => setTitulo(e.target.value)}
+              placeholder="Proyecto, lectura, práctica..."
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Descripción</label>
+            <textarea
+              rows={3}
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+              placeholder="Detalles, criterios de evaluación, etc."
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Fecha de entrega</label>
+            <input
+              type="date"
+              value={fecha}
+              onChange={(e) => setFecha(e.target.value)}
+            />
+          </div>
         </div>
 
-        <div>
-          <label>Descripción:</label>
-          <br />
-          <textarea
-            style={{ ...campoEstilo, minHeight: "80px", resize: "vertical" }}
-            value={descripcion}
-            onChange={(e) => setDescripcion(e.target.value)}
-            required
-          />
-        </div>
-
-        <div>
-          <label>Fecha:</label>
-          <br />
-          <input
-            type="date"
-            style={{ ...campoEstilo, maxWidth: "220px" }}
-            value={fecha}
-            onChange={(e) => setFecha(e.target.value)}
-            required
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={cargando}
-          style={{
-            marginTop: "8px",
-            padding: "8px 20px",
-            borderRadius: "999px",
-            border: "none",
-            background: "linear-gradient(90deg, #ff6bd5, #ffb347)",
-            color: "#1a0935",
-            fontWeight: "bold",
-            cursor: "pointer",
-          }}
-        >
-          {cargando ? "Guardando..." : "Agregar tarea"}
-        </button>
+        <button className="btn-primary">Agregar tarea</button>
       </form>
 
-      <h3 style={{ marginTop: "24px" }}>Tareas guardadas</h3>
-      {tareas.length === 0 && <p>No hay tareas todavía.</p>}
-      <ul>
-        {tareas.map((t) => (
-          <li key={t._id}>
-            <strong>{t.titulo}</strong> —{" "}
-            {new Date(t.fecha).toLocaleDateString("es-MX")}
-          </li>
-        ))}
-      </ul>
-    </PageLayout>
+      <section className="card">
+        <h2 className="section-title">
+          Tareas guardadas{" "}
+          {cargando && <span className="tag">Cargando…</span>}
+        </h2>
+
+        {tareas.length === 0 ? (
+          <p className="empty">Todavía no has registrado tareas.</p>
+        ) : (
+          <ul className="items-list">
+            {tareas.map((t) => (
+              <li key={t._id} className="item-row">
+                <div>
+                  <p className="item-title">{t.titulo}</p>
+                  {t.descripcion && (
+                    <p className="item-text">{t.descripcion}</p>
+                  )}
+                </div>
+                <div className="item-meta">
+                  <span className="pill">{t.fecha}</span>
+                  <button
+                    type="button"
+                    className="btn-secondary-sm"
+                    onClick={() => handleDelete(t._id)}
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
   );
 }
-
-export default EstudianteTareas;

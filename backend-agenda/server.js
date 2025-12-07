@@ -1,33 +1,57 @@
 // backend-agenda/server.js
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const mongoose = require("mongoose");
+import express from "express";
+import cors from "cors";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+
+import tareasRouter from "./routes/Tareas.js";
+import iaRouter from "./routes/ia.js";
+
+dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// Ajusta aquí tus orígenes (Netlify + localhost)
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://appconia.netlify.app",
+];
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, true); // si quieres, aquí puedes bloquear orígenes raros
+    },
+  })
+);
+
 app.use(express.json());
 
-// CONEXIÓN A MONGO usando MONGODB_URI del entorno
+const mongoUri = process.env.MONGODB_URI;
+if (!mongoUri) {
+  console.error("❌ Falta la variable MONGODB_URI en el backend");
+}
+
 mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log("MongoDB conectado"))
-  .catch((err) => console.error("Error MongoDB:", err));
+  .connect(mongoUri)
+  .then(() => console.log("✅ Conectado a MongoDB"))
+  .catch((err) => {
+    console.error("❌ Error al conectar con MongoDB", err);
+  });
 
-// Rutas
-const iaRoutes = require("./routes/ia");
-const tareasRoutes = require("./routes/Tareas");
-
-app.use("/api/ia", iaRoutes);
-app.use("/api/tareas", tareasRoutes);
-
-// Ruta simple para probar que el backend responde
 app.get("/", (req, res) => {
-  res.send("Backend de Agenda Inteligente OK");
+  res.send("API Agenda Inteligente funcionando");
 });
 
-// PUERTO (Render usa process.env.PORT)
+// Rutas
+app.use("/api/tareas", tareasRouter);
+app.use("/api/ia", iaRouter);
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-  console.log(`Servidor backend corriendo en puerto ${PORT}`);
+  console.log(`🚀 Backend escuchando en el puerto ${PORT}`);
 });

@@ -1,11 +1,13 @@
+// frontend-agenda/src/api/client.js
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.PROD
-  ? "https://repo-uywl.onrender.com/api"     // backend en Render
-  : "http://localhost:4000/api";             // backend local
+// En Netlify pon VITE_API_URL="https://tu-backend.onrender.com/api"
+const baseURL =
+  import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
-const api = axios.create({
-  baseURL: API_BASE_URL,
+const client = axios.create({
+  baseURL,
+  timeout: 10000,
 });
 
-export default api;
+export default client;

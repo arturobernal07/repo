@@ -1,8 +1,8 @@
-// frontend-agenda/src/pages/EstudianteIA.jsx
+// frontend-agenda/src/pages/DocenteInformesIA.jsx
 import { useState } from "react";
 import client from "../api/client";
 
-export default function EstudianteIA() {
+export default function DocenteInformesIA() {
   const [mensaje, setMensaje] = useState("");
   const [conversacion, setConversacion] = useState([]);
   const [cargando, setCargando] = useState(false);
@@ -11,10 +11,7 @@ export default function EstudianteIA() {
     const texto = mensaje.trim();
     if (!texto) return;
 
-    setConversacion((prev) => [
-      ...prev,
-      { autor: "Tú", texto },
-    ]);
+    setConversacion((prev) => [...prev, { autor: "Tú", texto }]);
     setMensaje("");
 
     try {
@@ -22,7 +19,10 @@ export default function EstudianteIA() {
       const { data } = await client.post("/ia", { mensaje: texto });
       setConversacion((prev) => [
         ...prev,
-        { autor: "Asistente IA", texto: data.respuesta || "Sin respuesta." },
+        {
+          autor: "Asistente IA",
+          texto: data.respuesta || "Sin respuesta.",
+        },
       ]);
     } catch (error) {
       console.error("Error con la IA:", error);
@@ -48,9 +48,10 @@ export default function EstudianteIA() {
 
   return (
     <div className="page">
-      <h1 className="page-title">Asistente IA del estudiante</h1>
+      <h1 className="page-title">Informes y asistente IA del docente</h1>
       <p className="page-subtitle">
-        Pídele ideas de tareas, recordatorios o formas de organizar tu estudio.
+        Pídele a la IA borradores de informes, rúbricas, mensajes para alumnos o
+        ideas de actividades.
       </p>
 
       <section className="card">
@@ -69,8 +70,17 @@ export default function EstudianteIA() {
 
           {conversacion.length === 0 && (
             <p className="empty">
-              Escríbeme algo como:{" "}
-              <em>"Dame tips para estudiar para el examen de matemáticas"</em>.
+              Ejemplos:{" "}
+              <em>
+                "Redacta un mensaje para recordar a mis alumnos que entreguen el
+                proyecto"
+              </em>{" "}
+              o{" "}
+              <em>
+                "Dame una rúbrica corta para evaluar una exposición de 5
+                minutos"
+              </em>
+              .
             </p>
           )}
         </div>
@@ -81,7 +91,7 @@ export default function EstudianteIA() {
             value={mensaje}
             onChange={(e) => setMensaje(e.target.value)}
             onKeyDown={handleKey}
-            placeholder="Pide ideas de tareas, técnicas de estudio, etc."
+            placeholder="Pide informes, mensajes, rúbricas, etc."
           />
           <button
             className="btn-primary"

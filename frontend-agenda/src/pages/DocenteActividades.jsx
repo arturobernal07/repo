@@ -1,31 +1,29 @@
-// src/pages/DocenteActividades.jsx
+// frontend-agenda/src/pages/DocenteActividades.jsx
 import { useEffect, useState } from "react";
-import api from "../api/client";
+import client from "../api/client";
 
-function DocenteActividades({ onUpdateList }) {
+const ROL = "docente";
+const EMAIL = "docente@demo.com";
+
+export default function DocenteActividades() {
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [fecha, setFecha] = useState("");
   const [actividades, setActividades] = useState([]);
   const [cargando, setCargando] = useState(false);
 
-  const campoEstilo = {
-    width: "100%",
-    maxWidth: "600px",
-    padding: "8px 10px",
-    borderRadius: "10px",
-    border: "1px solid rgba(255,255,255,0.25)",
-    background: "rgba(255,255,255,0.06)",
-    color: "white",
-    outline: "none",
-  };
-
   const cargarActividades = async () => {
     try {
-      const res = await api.get("/tareas?rol=docente");
-      setActividades(res.data);
+      setCargando(true);
+      const { data } = await client.get("/tareas", {
+        params: { rol: ROL, usuario: EMAIL },
+      });
+      setActividades(data);
     } catch (error) {
-      console.error("Error al cargar actividades del docente", error);
+      console.error("Error al cargar actividades:", error);
+      alert("No se pudieron cargar las actividades.");
+    } finally {
+      setCargando(false);
     }
   };
 
@@ -33,111 +31,115 @@ function DocenteActividades({ onUpdateList }) {
     cargarActividades();
   }, []);
 
-  const agregarActividad = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!titulo || !descripcion || !fecha) return;
+    if (!titulo.trim() || !fecha) return;
 
     try {
-      setCargando(true);
-      const res = await api.post("/tareas", {
+      const { data } = await client.post("/tareas", {
         titulo,
         descripcion,
         fecha,
-        rol: "docente", // 👈 importante
+        rol: ROL,
+        usuario: EMAIL,
       });
-
-      setActividades((prev) => [...prev, res.data]);
-      if (onUpdateList) {
-        onUpdateList((prev) => [...prev, res.data]);
-      }
-
+      setActividades((prev) => [...prev, data]);
       setTitulo("");
       setDescripcion("");
       setFecha("");
     } catch (error) {
-      alert("No se pudo guardar la actividad. Revisa el backend o la consola.");
-      console.error("Error al agregar actividad", error);
-    } finally {
-      setCargando(false);
+      console.error("Error al agregar actividad:", error);
+      alert("No se pudo guardar la actividad.");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("¿Eliminar esta actividad?")) return;
+
+    try {
+      await client.delete(`/tareas/${id}`);
+      setActividades((prev) => prev.filter((a) => a._id !== id));
+    } catch (error) {
+      console.error("Error al eliminar actividad:", error);
+      alert("No se pudo eliminar la actividad.");
     }
   };
 
   return (
-    <div>
-      <h2>Actividades del docente</h2>
-      <p>Ventana para registrar y consultar actividades conectadas a la base de datos.</p>
+    <div className="page">
+      <h1 className="page-title">Actividades del docente</h1>
+      <p className="page-subtitle">
+        Planea rápidamente las actividades que mandarás a tus grupos. También
+        aparecerán en tu salpicadero.
+      </p>
 
-      <form
-        onSubmit={agregarActividad}
-        style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "12px" }}
-      >
-        <div>
-          <label>Título:</label>
-          <br />
-          <input
-            style={campoEstilo}
-            value={titulo}
-            onChange={(e) => setTitulo(e.target.value)}
-            required
-          />
+      <form onSubmit={handleSubmit} className="card card-form">
+        <div className="form-grid">
+          <div className="form-field">
+            <label>Título de la actividad</label>
+            <input
+              value={titulo}
+              onChange={(e) => setTitulo(e.target.value)}
+              placeholder="Exposición, proyecto, quiz..."
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Descripción breve</label>
+            <textarea
+              rows={3}
+              value={descripcion}
+              onChange={(e) => setDescripcion(e.target.value)}
+              placeholder="Indicaciones, criterios, rúbrica..."
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Fecha</label>
+            <input
+              type="date"
+              value={fecha}
+              onChange={(e) => setFecha(e.target.value)}
+            />
+          </div>
         </div>
 
-        <div>
-          <label>Descripción:</label>
-          <br />
-          <textarea
-            style={{ ...campoEstilo, minHeight: "80px", resize: "vertical" }}
-            value={descripcion}
-            onChange={(e) => setDescripcion(e.target.value)}
-            required
-          />
-        </div>
-
-        <div>
-          <label>Fecha:</label>
-          <br />
-          <input
-            type="date"
-            style={{ ...campoEstilo, maxWidth: "220px" }}
-            value={fecha}
-            onChange={(e) => setFecha(e.target.value)}
-            required
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={cargando}
-          style={{
-            marginTop: "8px",
-            padding: "8px 20px",
-            borderRadius: "999px",
-            border: "none",
-            background: "linear-gradient(90deg, #ff6bd5, #ffb347)",
-            color: "#1a0935",
-            fontWeight: "bold",
-            cursor: "pointer",
-          }}
-        >
-          {cargando ? "Guardando..." : "Agregar actividad"}
-        </button>
+        <button className="btn-primary">Agregar actividad</button>
       </form>
 
-      <h3 style={{ marginTop: "24px" }}>Actividades guardadas</h3>
-      {actividades.length === 0 ? (
-        <p>No hay actividades registradas.</p>
-      ) : (
-        <ul>
-          {actividades.map((a) => (
-            <li key={a._id}>
-              <strong>{a.titulo}</strong> —{" "}
-              {a.fecha ? new Date(a.fecha).toLocaleDateString() : "Sin fecha"}
-            </li>
-          ))}
-        </ul>
-      )}
+      <section className="card">
+        <h2 className="section-title">
+          Actividades registradas{" "}
+          {cargando && <span className="tag">Cargando…</span>}
+        </h2>
+
+        {actividades.length === 0 ? (
+          <p className="empty">Aún no has registrado actividades.</p>
+        ) : (
+          <ul className="items-list">
+            {actividades.map((a) => (
+              <li key={a._id} className="item-row">
+                <div>
+                  <p className="item-title">{a.titulo}</p>
+                  {a.descripcion && (
+                    <p className="item-text">{a.descripcion}</p>
+                  )}
+                </div>
+                <div className="item-meta">
+                  <span className="pill">{a.fecha}</span>
+                  <button
+                    type="button"
+                    className="btn-secondary-sm"
+                    onClick={() => handleDelete(a._id)}
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }
-
-export default DocenteActividades;

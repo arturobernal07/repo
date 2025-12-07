@@ -1,67 +1,63 @@
 // backend-agenda/routes/Tareas.js
-const express = require('express');
+import express from "express";
+import Tarea from "../models/Tarea.js";
+
 const router = express.Router();
-const Tarea = require('../models/Tarea');
 
-// GET /api/tareas?rol=estudiante | docente (opcional)
-router.get('/', async (req, res) => {
+// GET /api/tareas?rol=estudiante&usuario=estudiante@demo.com
+router.get("/", async (req, res) => {
   try {
-    const { rol } = req.query;
+    const { rol, usuario } = req.query;
 
-    const filtro = rol ? { rol } : {};
+    const filtro = {};
+    if (rol) filtro.rol = rol;
+    if (usuario) filtro.usuario = usuario;
+
     const tareas = await Tarea.find(filtro).sort({ fecha: 1 });
-
     res.json(tareas);
   } catch (error) {
-    console.error('Error al obtener tareas:', error);
-    res.status(500).json({ mensaje: 'Error al obtener tareas' });
+    console.error("Error al obtener tareas:", error);
+    res.status(500).json({ mensaje: "Error al obtener tareas" });
   }
 });
 
 // POST /api/tareas
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   try {
-    const { titulo, descripcion, fecha, rol } = req.body;
+    const { titulo, descripcion, fecha, rol, usuario } = req.body;
 
-    const tarea = new Tarea({
+    if (!titulo || !fecha || !rol || !usuario) {
+      return res
+        .status(400)
+        .json({ mensaje: "Faltan datos obligatorios de la tarea" });
+    }
+
+    const nuevaTarea = new Tarea({
       titulo,
       descripcion,
       fecha,
-      rol: rol || 'estudiante', // por defecto estudiante
+      rol,
+      usuario,
     });
 
-    await tarea.save();
-    res.status(201).json(tarea);
-  } catch (error) {
-    console.error('Error al crear tarea:', error);
-    res.status(500).json({ mensaje: 'Error al crear tarea' });
-  }
-});
+    await nuevaTarea.save();
 
-// PUT /api/tareas/:id
-router.put('/:id', async (req, res) => {
-  try {
-    const tarea = await Tarea.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true },
-    );
-    res.json(tarea);
+    res.status(201).json(nuevaTarea);
   } catch (error) {
-    console.error('Error al actualizar tarea:', error);
-    res.status(500).json({ mensaje: 'Error al actualizar tarea' });
+    console.error("Error al crear tarea:", error);
+    res.status(500).json({ mensaje: "Error al crear tarea" });
   }
 });
 
 // DELETE /api/tareas/:id
-router.delete('/:id', async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     await Tarea.findByIdAndDelete(req.params.id);
-    res.json({ mensaje: 'Tarea eliminada' });
+    res.json({ mensaje: "Tarea eliminada" });
   } catch (error) {
-    console.error('Error al eliminar tarea:', error);
-    res.status(500).json({ mensaje: 'Error al eliminar tarea' });
+    console.error("Error al eliminar tarea:", error);
+    res.status(500).json({ mensaje: "Error al eliminar tarea" });
   }
 });
 
-module.exports = router;
+export default router;
