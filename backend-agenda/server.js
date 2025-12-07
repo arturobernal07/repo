@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const app = express();
 app.use(cors());
 app.use(express.json());
+console.log('Conectando a MongoDB...');                 // 👈 NUEVO
 
 // CONEXIÓN A MONGO usando MONGODB_URI del entorno
 mongoose
