@@ -1,4 +1,6 @@
+// frontend-agenda/src/pages/DocenteAsistencia.jsx
 import { useState } from "react";
+import PageLayout from "../components/PageLayout";
 
 function DocenteAsistencia() {
   const [lista, setLista] = useState([]);
@@ -11,7 +13,7 @@ function DocenteAsistencia() {
   };
 
   return (
-    <PageLayout>
+    <PageLayout titulo="Asistencias">
       <h2>Control de asistencia</h2>
       <p>Registro básico de asistencia de los estudiantes en clase.</p>
 
