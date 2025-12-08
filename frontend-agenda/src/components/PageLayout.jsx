@@ -16,7 +16,7 @@ import DocenteAsistencia from "../pages/DocenteAsistencia.jsx";
 import DocenteGrupos from "../pages/DocenteGrupos.jsx";
 import DocenteMateriales from "../pages/DocenteMateriales.jsx";
 import DocenteReportes from "../pages/DocenteReportes.jsx";
-import DocenteIA from "../pages/DocenteA.jsx";
+import DocenteIA from "../pages/DocenteIA.jsx";
 import DocenteReuniones from "../pages/DocenteReuniones.jsx";
 
 const estilos = {
