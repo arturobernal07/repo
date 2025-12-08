@@ -19,7 +19,7 @@ function Login({ onLogin }) {
       rol = "docente";
       nombre = "Docente Demo";
     } else {
-      alert("Credenciales incorrectas (usa las de demo).");
+      alert("Credenciales incorrectas (usa las de demo de abajo).");
       return;
     }
 
@@ -39,85 +39,118 @@ function Login({ onLogin }) {
     >
       <div
         style={{
-          backgroundColor: "rgba(15, 15, 40, 0.96)",
-          padding: "32px 36px",
-          borderRadius: "22px",
+          backgroundColor: "#0b0b23",
+          padding: "40px 50px",
+          borderRadius: "24px",
+          boxShadow: "0 25px 50px rgba(0,0,0,0.4)",
+          width: "420px",
+          maxWidth: "90vw",
           color: "white",
-          width: "360px",
-          boxShadow: "0 18px 45px rgba(0,0,0,0.55)",
+          fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
         }}
       >
-        <h2 style={{ marginBottom: "12px", textAlign: "center" }}>
+        <h1
+          style={{
+            textAlign: "center",
+            marginBottom: "8px",
+            fontSize: "30px",
+          }}
+        >
           Agenda Inteligente
-        </h2>
+        </h1>
         <p
           style={{
-            fontSize: "0.9rem",
-            marginBottom: "16px",
             textAlign: "center",
-            opacity: 0.85,
+            marginBottom: "24px",
+            color: "#c3c3ff",
+            fontSize: "14px",
           }}
         >
           Inicia sesión como estudiante o docente.
         </p>
 
         <form onSubmit={manejarSubmit}>
-          <div style={{ marginBottom: "12px" }}>
-            <label>Correo:</label>
-            <input
-              style={{
-                width: "100%",
-                padding: "8px",
-                borderRadius: "8px",
-                border: "none",
-                marginTop: "4px",
-              }}
-              type="email"
-              value={correo}
-              onChange={(e) => setCorreo(e.target.value)}
-            />
-          </div>
+          <label
+            style={{
+              display: "block",
+              fontSize: "14px",
+              marginBottom: "6px",
+            }}
+          >
+            Correo:
+          </label>
+          <input
+            type="email"
+            value={correo}
+            onChange={(e) => setCorreo(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              borderRadius: "10px",
+              border: "none",
+              outline: "none",
+              marginBottom: "16px",
+              backgroundColor: "#1a1a3a",
+              color: "white",
+            }}
+          />
 
-          <div style={{ marginBottom: "16px" }}>
-            <label>Contraseña:</label>
-            <input
-              style={{
-                width: "100%",
-                padding: "8px",
-                borderRadius: "8px",
-                border: "none",
-                marginTop: "4px",
-              }}
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+          <label
+            style={{
+              display: "block",
+              fontSize: "14px",
+              marginBottom: "6px",
+            }}
+          >
+            Contraseña:
+          </label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              borderRadius: "10px",
+              border: "none",
+              outline: "none",
+              marginBottom: "22px",
+              backgroundColor: "#1a1a3a",
+              color: "white",
+            }}
+          />
 
           <button
             type="submit"
             style={{
               width: "100%",
-              marginTop: "4px",
-              padding: "10px",
+              padding: "12px",
               borderRadius: "999px",
               border: "none",
-              background: "linear-gradient(90deg, #ff6bd5, #ffb347)",
-              color: "white",
-              fontWeight: "bold",
               cursor: "pointer",
+              fontWeight: 600,
+              fontSize: "15px",
+              background:
+                "linear-gradient(90deg, rgba(255,154,225,1) 0%, rgba(127,93,255,1) 50%, rgba(255,211,107,1) 100%)",
+              color: "#1b1024",
             }}
           >
             Entrar
           </button>
         </form>
 
-        <div style={{ marginTop: "18px", fontSize: "0.8rem" }}>
+        <div
+          style={{
+            marginTop: "18px",
+            fontSize: "12px",
+            color: "#d4d4ff",
+          }}
+        >
           <strong>Demo:</strong>
           <br />
-          Estudiante: estudiante@demo.com / 1234
+          Estudiante: <code>estudiante@demo.com</code> / <code>1234</code>
           <br />
-          Docente: docente@demo.com / 1234
+          Docente: <code>docente@demo.com</code> / <code>1234</code>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-// frontend-agenda/src/pages/EstudianteDashboard.jsx
+// src/pages/EstudianteDashboard.jsx
 import { useEffect, useState } from "react";
 import { obtenerTareas } from "../api/client";
 
@@ -8,9 +8,9 @@ export default function EstudianteDashboard() {
 
   const cargar = async () => {
     try {
+      setError("");
       const data = await obtenerTareas({ rol: "estudiante" });
       setTareas(data || []);
-      setError("");
     } catch (err) {
       console.error("Error estudiante:", err);
       setError("Error al cargar tareas.");
@@ -22,17 +22,24 @@ export default function EstudianteDashboard() {
   }, []);
 
   return (
-    <div className="page">
+    <div
+      style={{
+        padding: "32px",
+        color: "white",
+        minHeight: "100vh",
+        backgroundColor: "#050518",
+      }}
+    >
       <h1>Salpicadero del estudiante</h1>
       <p>Resumen general de las tareas próximas.</p>
 
-      {error && <p className="error">{error}</p>}
+      {error && <p style={{ color: "salmon" }}>{error}</p>}
 
       <ul>
         {tareas.map((t) => (
           <li key={t._id}>
-            <strong>{t.titulo}</strong> —{" "}
-            {t.fecha ? new Date(t.fecha).toLocaleDateString() : "Sin fecha"}
+            <strong>{t.titulo}</strong>{" "}
+            — {t.fecha ? new Date(t.fecha).toLocaleDateString() : "sin fecha"}
           </li>
         ))}
       </ul>
