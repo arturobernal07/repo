@@ -4,49 +4,49 @@ const Groq = require("groq-sdk");
 
 const router = express.Router();
 
-// Cliente de Groq (usa tu variable de entorno)
-const client = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+// Necesitas GROQ_API_KEY en las variables de entorno de Render
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-/**
- * POST /api/ia
- * Body: { mensaje: string, tipo?: string }
- */
+// SOLO /api/ia (sin extra /ia adentro)
+// POST https://repo-uywl.onrender.com/api/ia
 router.post("/", async (req, res) => {
+  const { mensaje, tipo } = req.body;
+
+  if (!mensaje) {
+    return res.status(400).json({ error: "Falta el mensaje" });
+  }
+
   try {
-    const { mensaje, tipo } = req.body;
-
-    if (!mensaje || typeof mensaje !== "string") {
-      return res.status(400).json({ error: "Falta el mensaje de la IA" });
-    }
-
-    // Puedes personalizar el “system prompt” según el tipo
-    const systemPrompt =
-      tipo === "estudio"
-        ? "Eres un asistente para estudiantes de universidad. Responde corto y claro en español."
-        : "Eres un asistente para estudiantes. Responde siempre en español, de forma amable y sencilla.";
-
-    const completion = await client.chat.completions.create({
-      model: "llama-3.3-70b-versatile", // o el modelo que estés usando
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.1-8b-instant",
       messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: mensaje },
+        {
+          role: "system",
+          content:
+            "Eres un asistente para estudiantes. Responde en español, breve y claro.",
+        },
+        {
+          role: "user",
+          content: mensaje,
+        },
       ],
+      temperature: 0.7,
     });
 
     const respuesta =
       completion.choices?.[0]?.message?.content ||
-      "No pude generar una respuesta en este momento.";
+      "No pude generar una respuesta.";
 
     res.json({ respuesta });
-  } catch (error) {
-    console.error("Error en ruta /api/ia:", error);
-    res.status(500).json({
-      error: "Error al obtener respuesta de la IA",
-      detalle: error.message,
-    });
+  } catch (err) {
+    console.error("Error al llamar a Groq:", err.response?.data || err.message);
+    res.status(500).json({ error: "Error al obtener respuesta de la IA" });
   }
+});
+
+// (Opcional) GET de prueba para abrir en el navegador
+router.get("/", (req, res) => {
+  res.json({ ok: true, msg: "IA endpoint ok" });
 });
 
 module.exports = router;
