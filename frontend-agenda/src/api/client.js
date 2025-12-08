@@ -1,32 +1,27 @@
 // frontend-agenda/src/api/client.js
 import axios from "axios";
 
-// Detecta si estás en local o en producción
-const baseURL =
-  import.meta.env.VITE_API_URL ||
-  (window.location.hostname === "localhost"
-    ? "http://localhost:4000/api"
-    : "https://repo-uywl.onrender.com/api");
-
-console.log("Usando backend:", baseURL);
+// URL del backend (Render)
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "https://repo-uywl.onrender.com/api";
 
 const client = axios.create({
-  baseURL,
+  baseURL: API_BASE_URL,
 });
 
-// (Opcional) para ver errores más claro en consola
-client.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error(
-      "Error HTTP:",
-      error.response?.status,
-      error.response?.data || error.message
-    );
-    return Promise.reject(error);
-  }
-);
-
-// 👉 IMPORTANTE: export default + nombrado
+// 👇 Esto arregla el error de Netlify: ahora sí hay export default
 export default client;
-export { client };
+
+// --- Helpers para tu app --- //
+
+// Llamar a la IA (POST /api/ia)
+export async function preguntarIA(mensaje) {
+  const resp = await client.post("/ia", { mensaje });
+  return resp.data; // { respuesta: "..." }
+}
+
+// Ejemplo de helper para tareas (si lo quieres usar)
+export async function obtenerTareas(rol) {
+  const resp = await client.get("/tareas", { params: { rol } });
+  return resp.data;
+}

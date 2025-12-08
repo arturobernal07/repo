@@ -1,54 +1,45 @@
 // frontend-agenda/src/pages/EstudianteIA.jsx
 import { useState } from "react";
 import { preguntarIA } from "../api/client";
-import { useState } from "react";
-import client from "../api/client";
 
 export default function EstudianteIA() {
-  const [mensaje, setMensaje] = useState("");
-  const [cargando, setCargando] = useState(false);
-  const [conversacion, setConversacion] = useState([
+  const [pregunta, setPregunta] = useState("");
+  const [mensajes, setMensajes] = useState([
     {
-      rol: "asistente",
+      de: "bot",
       texto:
         "Hola, soy tu asistente de IA. Pídeme ayuda para entender temas, organizar tareas o estudiar mejor.",
     },
   ]);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState("");
 
-  const manejarSubmit = async (e) => {
+  const manejarEnviar = async (e) => {
     e.preventDefault();
-    const texto = mensaje.trim();
-    if (!texto) return;
+    const texto = pregunta.trim();
+    if (!texto || cargando) return;
 
-    // agrega el mensaje del usuario al chat
-    setConversacion((prev) => [
-      ...prev,
-      { rol: "usuario", texto },
-    ]);
-    setMensaje("");
+    // Añadimos el mensaje del usuario al chat
+    setMensajes((prev) => [...prev, { de: "usuario", texto }]);
+    setPregunta("");
     setCargando(true);
+    setError("");
 
     try {
-      const res = await client.post("/ia", {
-        pregunta: texto,
-        rol: "estudiante",
-      });
-
+      const data = await preguntarIA(texto);
       const respuesta =
-        res.data?.respuesta || "No pude obtener respuesta de la IA.";
+        data.respuesta || data.message || "No recibí respuesta de la IA.";
 
-      setConversacion((prev) => [
-        ...prev,
-        { rol: "asistente", texto: respuesta },
-      ]);
+      setMensajes((prev) => [...prev, { de: "bot", texto: respuesta }]);
     } catch (err) {
       console.error("Error IA:", err);
-      setConversacion((prev) => [
+      setError("Ocurrió un error al llamar a la IA.");
+      setMensajes((prev) => [
         ...prev,
         {
-          rol: "asistente",
+          de: "bot",
           texto:
-            "Ocurrió un error al llamar a la IA. Intenta de nuevo más tarde.",
+            "No pude obtener respuesta de la IA. Intenta de nuevo más tarde.",
         },
       ]);
     } finally {
@@ -57,49 +48,49 @@ export default function EstudianteIA() {
   };
 
   return (
-    <div className="ia-page">
-      <h1>Asistente IA del estudiante</h1>
-      <p className="ia-intro">
+    <div className="panel-estudiante">
+      <h2>Asistente IA del estudiante</h2>
+      <p>
         Pregúntale a la IA sobre tus tareas, cómo estudiar mejor, resúmenes o
-        ideas para organizar tu semana.
+        ideas para organizar tu semana. Las respuestas serán en español y
+        pensadas para estudiantes.
       </p>
 
-      <div className="ia-chat-card">
-        <div className="ia-chat-window">
-          {conversacion.map((msg, idx) => (
+      <div className="tarjeta-ia">
+        <div className="chat-ia">
+          {mensajes.map((m, idx) => (
             <div
               key={idx}
               className={
-                "ia-message " +
-                (msg.rol === "asistente" ? "ia-message-bot" : "ia-message-user")
+                m.de === "usuario" ? "mensaje mensaje-usuario" : "mensaje"
               }
             >
-              <div className="ia-message-label">
-                {msg.rol === "asistente" ? "Asistente IA" : "Tú"}
-              </div>
-              <div className="ia-message-text">{msg.texto}</div>
+              <strong>{m.de === "usuario" ? "Tú" : "Asistente IA"}</strong>
+              <p>{m.texto}</p>
             </div>
           ))}
 
           {cargando && (
-            <div className="ia-message ia-message-bot">
-              <div className="ia-message-label">Asistente IA</div>
-              <div className="ia-message-text">Pensando...</div>
+            <div className="mensaje">
+              <strong>Asistente IA</strong>
+              <p>Pensando...</p>
             </div>
           )}
         </div>
 
-        <form className="ia-form" onSubmit={manejarSubmit}>
+        <form onSubmit={manejarEnviar} className="form-ia">
           <input
             type="text"
+            value={pregunta}
+            onChange={(e) => setPregunta(e.target.value)}
             placeholder="Escribe tu pregunta..."
-            value={mensaje}
-            onChange={(e) => setMensaje(e.target.value)}
           />
           <button type="submit" disabled={cargando}>
             {cargando ? "Enviando..." : "Enviar"}
           </button>
         </form>
+
+        {error && <p className="texto-error">{error}</p>}
       </div>
     </div>
   );
