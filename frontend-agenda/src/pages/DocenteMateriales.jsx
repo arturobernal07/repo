@@ -1,5 +1,4 @@
 import { useState } from "react";
-import PageLayout from "../components/PageLayout";
 
 function DocenteMateriales() {
   const [materiales, setMateriales] = useState([]);

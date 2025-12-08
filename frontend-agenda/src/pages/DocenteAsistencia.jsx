@@ -1,5 +1,4 @@
 import { useState } from "react";
-import PageLayout from "../components/PageLayout";
 
 function DocenteAsistencia() {
   const [lista, setLista] = useState([]);

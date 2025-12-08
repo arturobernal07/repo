@@ -1,4 +1,3 @@
-import PageLayout from "../components/PageLayout";
 
 function DocenteReportes() {
   return (
