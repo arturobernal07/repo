@@ -1,52 +1,51 @@
 // backend-agenda/routes/ia.js
-const express = require('express');
-const router = express.Router();
-const Groq = require('groq-sdk');
+const express = require("express");
+const Groq = require("groq-sdk");
 
-// Usa la API key de tu .env
-const groq = new Groq({
+const router = express.Router();
+
+// Cliente de Groq (usa tu variable de entorno)
+const client = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-// POST /api/ia
-router.post('/ia', async (req, res) => {
+/**
+ * POST /api/ia
+ * Body: { mensaje: string, tipo?: string }
+ */
+router.post("/", async (req, res) => {
   try {
-    const { pregunta, rol } = req.body;
+    const { mensaje, tipo } = req.body;
 
-    if (!pregunta || !pregunta.trim()) {
-      return res.status(400).json({ error: 'La pregunta es obligatoria' });
+    if (!mensaje || typeof mensaje !== "string") {
+      return res.status(400).json({ error: "Falta el mensaje de la IA" });
     }
 
-    const contextoRol = rol === 'docente' ? 'docente universitario'
-                                          : 'estudiante universitario';
+    // Puedes personalizar el “system prompt” según el tipo
+    const systemPrompt =
+      tipo === "estudio"
+        ? "Eres un asistente para estudiantes de universidad. Responde corto y claro en español."
+        : "Eres un asistente para estudiantes. Responde siempre en español, de forma amable y sencilla.";
 
-    const completion = await groq.chat.completions.create({
-      model: 'mixtral-8x7b-32768', // o el modelo que estés usando en Groq
+    const completion = await client.chat.completions.create({
+      model: "llama-3.3-70b-versatile", // o el modelo que estés usando
       messages: [
-        {
-          role: 'system',
-          content:
-            'Eres un asistente educativo en español. Responde de forma clara, breve y útil para ' +
-            contextoRol +
-            '.',
-        },
-        {
-          role: 'user',
-          content: pregunta,
-        },
+        { role: "system", content: systemPrompt },
+        { role: "user", content: mensaje },
       ],
-      temperature: 0.7,
-      max_tokens: 400,
     });
 
-    const texto =
-      completion.choices?.[0]?.message?.content?.trim() ||
-      'No pude generar una respuesta en este momento.';
+    const respuesta =
+      completion.choices?.[0]?.message?.content ||
+      "No pude generar una respuesta en este momento.";
 
-    res.json({ respuesta: texto });
+    res.json({ respuesta });
   } catch (error) {
-    console.error('❌ Error en /api/ia:', error.response?.data || error.message);
-    res.status(500).json({ error: 'Error al obtener respuesta de la IA' });
+    console.error("Error en ruta /api/ia:", error);
+    res.status(500).json({
+      error: "Error al obtener respuesta de la IA",
+      detalle: error.message,
+    });
   }
 });
 
