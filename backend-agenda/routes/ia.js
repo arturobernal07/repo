@@ -1,60 +1,69 @@
 // backend-agenda/routes/ia.js
 const express = require("express");
-const Groq = require("groq-sdk");
-
 const router = express.Router();
 
-// Cliente de Groq: usa la API key desde tu .env (NUNCA la subas a GitHub)
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+// Si quieres usar Groq de verdad, descomenta esto y asegúrate de tener
+// GROQ_API_KEY en el .env
+// const Groq = require("groq-sdk");
+// const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 router.post("/", async (req, res) => {
   try {
-    console.log("📥 /api/ia body recibido:", req.body);
+    // 👇 Esto es lo que esperamos que mande el frontend
+    const { mensaje, tipo } = req.body || {};
 
-    // Aceptamos varios nombres por si en el front cambian
-    const mensaje =
-      (req.body && req.body.mensaje) ||
-      req.body?.pregunta ||
-      req.body?.texto ||
-      "";
-
-    const tipo = (req.body && req.body.tipo) || "estudiante";
-
-    if (!mensaje || typeof mensaje !== "string" || !mensaje.trim()) {
-      return res
-        .status(400)
-        .json({ error: "Debes enviar un campo 'mensaje' con texto." });
+    if (!mensaje || typeof mensaje !== "string") {
+      return res.status(400).json({
+        error: "Falta el campo 'mensaje' en el body",
+      });
     }
 
-    const systemPrompt =
-      tipo === "docente"
-        ? "Eres un asistente pensado para docentes. Responde en español, de forma clara, breve y enfocada en apoyar la planeación y organización de actividades académicas."
-        : "Eres un asistente pensado para estudiantes. Responde en español, claro, breve y útil para estudiar, organizar tareas y entender temas.";
+    // --- IA FALSA (DEMO) ---
+    // Aquí puedes dejar una respuesta fija pero “inteligente”
+    let rolTexto = "";
+    if (tipo === "docente") {
+      rolTexto = "Como docente, ";
+    } else {
+      rolTexto = "Como estudiante, ";
+    }
 
+    const respuestaDemo = `
+${rolTexto}la inteligencia artificial (IA) es un área de la computación
+que crea programas capaces de analizar información, aprender patrones
+y tomar decisiones. En esta agenda, la IA te sirve para organizar tareas,
+dar tips de estudio y ayudarte a planear mejor tu tiempo.
+    `.trim();
+
+    // Si quieres usar Groq, sería algo como esto:
+    /*
     const completion = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant", // puedes cambiar el modelo si quieres
+      model: "llama-3.1-8b-instant",
       messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: mensaje },
+        {
+          role: "system",
+          content:
+            "Eres un asistente que ayuda a estudiantes y docentes a organizar tareas y estudiar mejor. Responde en español.",
+        },
+        {
+          role: "user",
+          content: mensaje,
+        },
       ],
-      temperature: 0.7,
-      max_tokens: 512,
-      top_p: 1,
-      stream: false,
     });
 
-    const respuesta =
-      completion?.choices?.[0]?.message?.content?.trim() ||
-      "No pude generar una respuesta en este momento.";
+    const respuestaGroq =
+      completion.choices?.[0]?.message?.content || respuestaDemo;
+    */
 
-    return res.json({ respuesta });
+    // Por ahora devolvemos la respuesta de demo:
+    return res.json({
+      respuesta: respuestaDemo,
+    });
   } catch (error) {
-    console.error("💥 Error en /api/ia:", error);
-    return res
-      .status(500)
-      .json({ error: "Error al obtener respuesta de la IA" });
+    console.error("Error en /api/ia:", error);
+    return res.status(500).json({
+      error: "Error interno en el servidor de IA",
+    });
   }
 });
 
