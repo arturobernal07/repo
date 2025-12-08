@@ -10,14 +10,14 @@ import EstudianteCalendario from "../pages/EstudianteCalendario";
 import EstudianteProgreso from "../pages/EstudianteProgreso";
 import EstudianteIA from "../pages/EstudianteIA";
 
-import DocenteDashboard from "../pages/DocenteDashboard";
-import DocenteActividades from "../pages/DocenteActividades";
-import DocenteAsistencia from "../pages/DocenteAsistencia";
-import DocenteGrupos from "../pages/DocenteGrupos";
-import DocenteMateriales from "../pages/DocenteMateriales";
-import DocenteReportes from "../pages/DocenteReportes";
-import DocenteInformesIA from "../pages/DocenteInformesIA";
-import DocenteIA from "../pages/DocenteIA";
+import DocenteDashboard from "../pages/DocenteDashboard.jsx";
+import DocenteActividades from "../pages/DocenteActividades.jsx";
+import DocenteAsistencia from "../pages/DocenteAsistencia.jsx";
+import DocenteGrupos from "../pages/DocenteGrupos.jsx";
+import DocenteMateriales from "../pages/DocenteMateriales.jsx";
+import DocenteReportes from "../pages/DocenteReportes.jsx";
+import DocenteIA from "../pages/DocenteA.jsx";
+import DocenteReuniones from "../pages/DocenteReuniones.jsx";
 
 const estilos = {
   app: {
@@ -101,15 +101,19 @@ const MENU_ESTUDIANTE = [
   { id: "ia", label: "Asistente IA" },
 ];
 
-const MENU_DOCENTE = [
-  { id: "panel", label: "Panel" },
-  { id: "actividades", label: "Actividades" },
-  { id: "asistencia", label: "Asistencia" },
-  { id: "grupos", label: "Grupos" },
-  { id: "materiales", label: "Materiales" },
-  { id: "reportes", label: "Reportes" },
-  { id: "informes-ia", label: "Informes IA" },
-  { id: "ia", label: "Asistente IA" },
+const pestañasDocente = [
+  { id: "tablero", texto: "Tablero", componente: <DocenteDashboard /> },
+  { id: "actividades", texto: "Actividades", componente: <DocenteActividades /> },
+  { id: "asistencia", texto: "Asistencia", componente: <DocenteAsistencia /> },
+  { id: "grupos", texto: "Grupos", componente: <DocenteGrupos /> },
+  { id: "materiales", texto: "Materiales", componente: <DocenteMateriales /> },
+  { id: "informes", texto: "Informes", componente: <DocenteReportes /> },
+
+  // Nueva pestaña tipo calendario para el docente
+  { id: "reuniones", texto: "Reuniones", componente: <DocenteReuniones /> },
+
+  // Un solo asistente IA
+  { id: "asistenteIA", texto: "Asistente IA", componente: <DocenteIA /> },
 ];
 
 export default function PageLayout() {
