@@ -1,5 +1,7 @@
 // frontend-agenda/src/pages/EstudianteIA.jsx
 import { useState } from "react";
+import { preguntarIA } from "../api/client";
+import { useState } from "react";
 import client from "../api/client";
 
 export default function EstudianteIA() {

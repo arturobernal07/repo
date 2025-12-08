@@ -1,42 +1,43 @@
 // backend-agenda/routes/ia.js
-const express = require("express");
-const Groq = require("groq-sdk");
+const express = require('express');
+const Groq = require('groq-sdk');
 
 const router = express.Router();
 
-const groq = new Groq({
+const client = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-// POST /api/ia
-router.post("/", async (req, res) => {
+router.post('/', async (req, res) => {
   try {
-    const { pregunta } = req.body;
+    const { mensaje, tipo } = req.body;
 
-    if (!pregunta || !pregunta.trim()) {
-      return res.status(400).json({ error: "Falta 'pregunta' en el cuerpo" });
+    if (!mensaje) {
+      return res.status(400).json({ error: 'Falta el mensaje' });
     }
 
-    const completion = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+    const promptBase =
+      tipo === 'docente'
+        ? 'Eres un asistente para docentes que usan una agenda académica. Responde en español de forma breve y clara.'
+        : 'Eres un asistente para estudiantes que usan una agenda académica. Responde en español de forma breve y clara.';
+
+    const completion = await client.chat.completions.create({
+      model: 'llama-3.2-3b-preview',
       messages: [
-        {
-          role: "system",
-          content:
-            "Eres un asistente para estudiantes de preparatoria y universidad. Responde en español, claro y corto.",
-        },
-        { role: "user", content: pregunta },
+        { role: 'system', content: promptBase },
+        { role: 'user', content: mensaje },
       ],
+      temperature: 0.7,
     });
 
-    const respuesta = completion.choices[0]?.message?.content ?? "";
+    const texto =
+      completion.choices?.[0]?.message?.content ??
+      'No pude generar respuesta en este momento.';
 
-    return res.json({ respuesta });
+    res.json({ respuesta: texto });
   } catch (err) {
-    console.error("Error en IA:", err.response?.data || err.message);
-    return res
-      .status(500)
-      .json({ error: "Error al obtener respuesta de la IA" });
+    console.error('Error IA:', err);
+    res.status(500).json({ error: 'Error al obtener respuesta de la IA' });
   }
 });
 
