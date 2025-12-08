@@ -1,27 +1,103 @@
 // frontend-agenda/src/api/client.js
-import axios from "axios";
 
-// URL del backend (Render)
-const API_BASE_URL =
+// URL base de tu backend EN PRODUCCIÓN (Render)
+const API_BASE =
   import.meta.env.VITE_API_URL || "https://repo-uywl.onrender.com/api";
 
-const client = axios.create({
-  baseURL: API_BASE_URL,
-});
+// ---- helper para manejar respuestas HTTP ----
+async function manejarRespuesta(respuesta) {
+  if (!respuesta.ok) {
+    const texto = await respuesta.text().catch(() => "");
+    throw new Error(`Error HTTP ${respuesta.status}: ${texto}`);
+  }
 
-// 👇 Esto arregla el error de Netlify: ahora sí hay export default
-export default client;
-
-// --- Helpers para tu app --- //
-
-// Llamar a la IA (POST /api/ia)
-export async function preguntarIA(mensaje) {
-  const resp = await client.post("/ia", { mensaje });
-  return resp.data; // { respuesta: "..." }
+  // Si no hay JSON, regresa null
+  try {
+    return await respuesta.json();
+  } catch {
+    return null;
+  }
 }
 
-// Ejemplo de helper para tareas (si lo quieres usar)
-export async function obtenerTareas(rol) {
-  const resp = await client.get("/tareas", { params: { rol } });
-  return resp.data;
+/**
+ * Obtener tareas
+ * @param {Object} params filtros opcionales, por ej. { rol: "estudiante" }
+ */
+export async function obtenerTareas(params = {}) {
+  const url = new URL(`${API_BASE}/tareas`);
+
+  Object.entries(params).forEach(([clave, valor]) => {
+    if (valor !== undefined && valor !== null && valor !== "") {
+      url.searchParams.set(clave, valor);
+    }
+  });
+
+  const res = await fetch(url.toString(), {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  return manejarRespuesta(res);
+}
+
+/**
+ * Crear una nueva tarea
+ * @param {Object} tarea { titulo, descripcion, fecha, rol, tipo, ... }
+ */
+export async function crearTarea(tarea) {
+  const res = await fetch(`${API_BASE}/tareas`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(tarea),
+  });
+
+  return manejarRespuesta(res);
+}
+
+/**
+ * Actualizar una tarea existente
+ * @param {string} id  id de la tarea (Mongo)
+ * @param {Object} cambios  campos a actualizar
+ */
+export async function actualizarTarea(id, cambios) {
+  const res = await fetch(`${API_BASE}/tareas/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(cambios),
+  });
+
+  return manejarRespuesta(res);
+}
+
+/**
+ * Eliminar una tarea
+ * @param {string} id id de la tarea
+ */
+export async function eliminarTarea(id) {
+  const res = await fetch(`${API_BASE}/tareas/${id}`, {
+    method: "DELETE",
+  });
+
+  return manejarRespuesta(res);
+}
+
+/**
+ * Consultar a la IA (Groq)
+ * @param {Object} datos { mensaje, tipo }
+ */
+export async function preguntarIA(datos) {
+  const res = await fetch(`${API_BASE}/ia`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(datos),
+  });
+
+  return manejarRespuesta(res);
 }
