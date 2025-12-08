@@ -8,9 +8,9 @@ export default function EstudianteDashboard() {
 
   const cargar = async () => {
     try {
-      setError("");
       const data = await obtenerTareas({ rol: "estudiante" });
       setTareas(data || []);
+      setError("");
     } catch (err) {
       console.error("Error estudiante:", err);
       setError("Error al cargar tareas.");
@@ -22,24 +22,17 @@ export default function EstudianteDashboard() {
   }, []);
 
   return (
-    <div
-      style={{
-        padding: "32px",
-        color: "white",
-        minHeight: "100vh",
-        backgroundColor: "#050518",
-      }}
-    >
-      <h1>Salpicadero del estudiante</h1>
+    <div>
+      <h2>Salpicadero del estudiante</h2>
       <p>Resumen general de las tareas próximas.</p>
 
-      {error && <p style={{ color: "salmon" }}>{error}</p>}
+      {error && <p style={{ color: "#ff9ba5" }}>{error}</p>}
 
       <ul>
         {tareas.map((t) => (
           <li key={t._id}>
-            <strong>{t.titulo}</strong>{" "}
-            — {t.fecha ? new Date(t.fecha).toLocaleDateString() : "sin fecha"}
+            <strong>{t.titulo}</strong> —{" "}
+            {new Date(t.fecha).toLocaleDateString()}
           </li>
         ))}
       </ul>
