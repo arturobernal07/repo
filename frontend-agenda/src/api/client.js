@@ -1,8 +1,10 @@
 // frontend-agenda/src/api/client.js
 
-// URL base de tu backend EN PRODUCCIÓN (Render)
+// URL base del backend
+// En producción Netlify usará VITE_API_URL (Render)
+// En local, si no hay .env, usa http://localhost:4000
 const API_BASE =
-  import.meta.env.VITE_API_URL || "https://repo-uywl.onrender.com/api";
+  import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 // ---- helper para manejar respuestas HTTP ----
 async function manejarRespuesta(respuesta) {
@@ -11,7 +13,6 @@ async function manejarRespuesta(respuesta) {
     throw new Error(`Error HTTP ${respuesta.status}: ${texto}`);
   }
 
-  // Si no hay JSON, regresa null
   try {
     return await respuesta.json();
   } catch {
@@ -19,10 +20,7 @@ async function manejarRespuesta(respuesta) {
   }
 }
 
-/**
- * Obtener tareas
- * @param {Object} params filtros opcionales, por ej. { rol: "estudiante" }
- */
+// Obtener tareas
 export async function obtenerTareas(params = {}) {
   const url = new URL(`${API_BASE}/tareas`);
 
@@ -41,10 +39,7 @@ export async function obtenerTareas(params = {}) {
   return manejarRespuesta(res);
 }
 
-/**
- * Crear una nueva tarea
- * @param {Object} tarea { titulo, descripcion, fecha, rol, tipo, ... }
- */
+// Crear tarea
 export async function crearTarea(tarea) {
   const res = await fetch(`${API_BASE}/tareas`, {
     method: "POST",
@@ -57,11 +52,7 @@ export async function crearTarea(tarea) {
   return manejarRespuesta(res);
 }
 
-/**
- * Actualizar una tarea existente
- * @param {string} id  id de la tarea (Mongo)
- * @param {Object} cambios  campos a actualizar
- */
+// Actualizar tarea
 export async function actualizarTarea(id, cambios) {
   const res = await fetch(`${API_BASE}/tareas/${id}`, {
     method: "PUT",
@@ -74,10 +65,7 @@ export async function actualizarTarea(id, cambios) {
   return manejarRespuesta(res);
 }
 
-/**
- * Eliminar una tarea
- * @param {string} id id de la tarea
- */
+// Eliminar tarea
 export async function eliminarTarea(id) {
   const res = await fetch(`${API_BASE}/tareas/${id}`, {
     method: "DELETE",
@@ -86,10 +74,7 @@ export async function eliminarTarea(id) {
   return manejarRespuesta(res);
 }
 
-/**
- * Consultar a la IA (Groq)
- * @param {Object} datos { mensaje, tipo }
- */
+// Asistente IA
 export async function preguntarIA(datos) {
   const res = await fetch(`${API_BASE}/ia`, {
     method: "POST",
