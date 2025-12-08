@@ -1,10 +1,10 @@
 // frontend-agenda/src/api/client.js
 
 // URL base del backend
-// En producción Netlify usará VITE_API_URL (Render)
-// En local, si no hay .env, usa http://localhost:4000
+// En producción: VITE_API_URL (Render)
+// En local: http://localhost:4000/api
 const API_BASE =
-  import.meta.env.VITE_API_URL || "http://localhost:4000";
+  import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
 // ---- helper para manejar respuestas HTTP ----
 async function manejarRespuesta(respuesta) {
