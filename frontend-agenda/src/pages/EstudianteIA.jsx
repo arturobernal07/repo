@@ -19,16 +19,21 @@ export default function EstudianteIA() {
     const texto = pregunta.trim();
     if (!texto || cargando) return;
 
-    // Añadimos el mensaje del usuario al chat
+    // añadimos el mensaje del usuario al chat
     setMensajes((prev) => [...prev, { de: "usuario", texto }]);
     setPregunta("");
     setCargando(true);
     setError("");
 
     try {
-      const data = await preguntarIA(texto);
+      // 👇 AQUÍ VA LA LLAMADA CORRECTA A LA API
+      const data = await preguntarIA({
+        mensaje: texto,
+        tipo: "estudiante",
+      });
+
       const respuesta =
-        data.respuesta || data.message || "No recibí respuesta de la IA.";
+        data?.respuesta || data?.message || "No recibí respuesta de la IA.";
 
       setMensajes((prev) => [...prev, { de: "bot", texto: respuesta }]);
     } catch (err) {
@@ -48,7 +53,7 @@ export default function EstudianteIA() {
   };
 
   return (
-    <div className="panel-estudiante">
+    <div className="pagina-ia">
       <h2>Asistente IA del estudiante</h2>
       <p>
         Pregúntale a la IA sobre tus tareas, cómo estudiar mejor, resúmenes o
@@ -56,29 +61,24 @@ export default function EstudianteIA() {
         pensadas para estudiantes.
       </p>
 
-      <div className="tarjeta-ia">
-        <div className="chat-ia">
+      <div className="chat-ia">
+        <div className="chat-ia-mensajes">
           {mensajes.map((m, idx) => (
             <div
               key={idx}
-              className={
-                m.de === "usuario" ? "mensaje mensaje-usuario" : "mensaje"
-              }
+              className={`mensaje ${
+                m.de === "usuario" ? "mensaje-usuario" : "mensaje-ia"
+              }`}
             >
-              <strong>{m.de === "usuario" ? "Tú" : "Asistente IA"}</strong>
-              <p>{m.texto}</p>
+              <div className="mensaje-autor">
+                {m.de === "usuario" ? "Tú" : "Asistente IA"}
+              </div>
+              <div className="mensaje-texto">{m.texto}</div>
             </div>
           ))}
-
-          {cargando && (
-            <div className="mensaje">
-              <strong>Asistente IA</strong>
-              <p>Pensando...</p>
-            </div>
-          )}
         </div>
 
-        <form onSubmit={manejarEnviar} className="form-ia">
+        <form className="chat-ia-form" onSubmit={manejarEnviar}>
           <input
             type="text"
             value={pregunta}
