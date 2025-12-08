@@ -1,84 +1,96 @@
 // backend-agenda/routes/Tareas.js
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const Tarea = require('../models/Tarea');
+const Tarea = require("../models/Tarea");
 
-// GET /api/tareas?rol=estudiante&tipo=tarea|recordatorio|nota
-router.get('/tareas', async (req, res) => {
+/**
+ * GET /api/tareas?rol=estudiante|docente
+ * Lista tareas filtradas por rol (estudiante / docente)
+ */
+router.get("/", async (req, res) => {
   try {
-    const { rol, tipo } = req.query;
+    const { rol } = req.query;
 
     const filtro = {};
-    if (rol) filtro.rol = rol;
-    if (tipo) filtro.tipo = tipo; // "tarea", "recordatorio", "nota"
+    if (rol) {
+      filtro.rol = rol; // "estudiante" o "docente"
+    }
 
     const tareas = await Tarea.find(filtro).sort({ fecha: 1 });
     res.json(tareas);
   } catch (err) {
-    console.error('❌ Error al obtener tareas', err);
-    res.status(500).json({ error: 'Error al obtener tareas' });
+    console.error("❌ Error al obtener tareas:", err);
+    res.status(500).json({ error: "Error al obtener tareas" });
   }
 });
 
-// POST /api/tareas
-router.post('/tareas', async (req, res) => {
+/**
+ * POST /api/tareas
+ * Crea una nueva tarea
+ */
+router.post("/", async (req, res) => {
   try {
-    const { titulo, descripcion, fecha, rol, tipo, completada } = req.body;
+    const { titulo, descripcion, fecha, rol, categoria, completada } = req.body;
 
-    const nuevaTarea = new Tarea({
+    const tarea = new Tarea({
       titulo,
-      descripcion,
+      descripcion: descripcion || "",
       fecha,
       rol,          // "estudiante" o "docente"
-      tipo,         // "tarea" | "recordatorio" | "nota"
+      categoria,    // "tarea" | "recordatorio" | "nota" | "evento" (lo que uses)
       completada: !!completada,
     });
 
-    const guardada = await nuevaTarea.save();
+    const guardada = await tarea.save();
     res.status(201).json(guardada);
   } catch (err) {
-    console.error('❌ Error al crear tarea', err);
-    res.status(500).json({ error: 'Error al crear tarea' });
+    console.error("❌ Error al crear tarea:", err);
+    res.status(500).json({ error: "Error al crear tarea" });
   }
 });
 
-// ✅ PUT /api/tareas/:id  (editar)
-router.put('/tareas/:id', async (req, res) => {
+/**
+ * PUT /api/tareas/:id
+ * Actualiza una tarea existente
+ */
+router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { titulo, descripcion, fecha, rol, tipo, completada } = req.body;
 
-    const actualizada = await Tarea.findByIdAndUpdate(
-      id,
-      { titulo, descripcion, fecha, rol, tipo, completada },
-      { new: true }
-    );
+    const actualizada = await Tarea.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!actualizada) {
-      return res.status(404).json({ error: 'Tarea no encontrada' });
+      return res.status(404).json({ error: "Tarea no encontrada" });
     }
 
     res.json(actualizada);
   } catch (err) {
-    console.error('❌ Error al actualizar tarea', err);
-    res.status(500).json({ error: 'Error al actualizar tarea' });
+    console.error("❌ Error al actualizar tarea:", err);
+    res.status(500).json({ error: "Error al actualizar tarea" });
   }
 });
 
-// DELETE /api/tareas/:id
-router.delete('/tareas/:id', async (req, res) => {
+/**
+ * DELETE /api/tareas/:id
+ * Elimina una tarea
+ */
+router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const eliminada = await Tarea.findByIdAndDelete(id);
 
-    if (!eliminada) {
-      return res.status(404).json({ error: 'Tarea no encontrada' });
+    const borrada = await Tarea.findByIdAndDelete(id);
+
+    if (!borrada) {
+      return res.status(404).json({ error: "Tarea no encontrada" });
     }
 
-    res.json({ mensaje: 'Tarea eliminada' });
+    res.json({ ok: true });
   } catch (err) {
-    console.error('❌ Error al eliminar tarea', err);
-    res.status(500).json({ error: 'Error al eliminar tarea' });
+    console.error("❌ Error al eliminar tarea:", err);
+    res.status(500).json({ error: "Error al eliminar tarea" });
   }
 });
 
